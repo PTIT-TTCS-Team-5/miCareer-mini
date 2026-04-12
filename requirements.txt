@@ -1,0 +1,9 @@
+streamlit>=1.30.0
+psycopg2-binary
+sqlalchemy
+python-dotenv
+openai
+google-generativeai
+anthropic
+langchain
+pgvector
