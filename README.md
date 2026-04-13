@@ -1,6 +1,6 @@
 # miCareer-mini
 
-Giao diện Web Frontend nhẹ dành cho nhân sự (HR), tích hợp trực tiếp với thuật toán Vector Retrieval-Augmented Generation (RAG) của dự án lõi FANG. Hệ thống sử dụng **Streamlit** để tối ưu hóa tốc độ triển khai UI và đảm bảo tương tác AI thời gian thực.
+Giao diện Web Frontend (Streamlit) dành cho nhân sự (HR) và ứng viên, đóng vai trò **thin client** tích hợp với **FANG v2 AI Core**. Mọi logic AI (embedding, RAG, fallback) được xử lý tại FANG; miCareer-mini chỉ gọi JSON API và hiển thị kết quả.
 
 ## 1. Cài Đặt và Chạy Ứng Dụng
 
@@ -21,8 +21,10 @@ pre-commit install
 
 **Bước 2: Cài đặt Biến Môi Trường**
 Hãy đổi tên (hoặc Copy) file `.env.example` thành `.env` ngay tại thư mục gốc và điền thông tin:
-- Mật khẩu kết nối CSDL PostgreSQL (`DATABASE_URL`).
-- Cấu hình các API Keys cho mô hình (`GOOGLE_API_KEY`, `OPENAI_API_KEY`, `CLAUDE_API_KEY`).
+- Kết nối CSDL PostgreSQL (`DATABASE_URL`).
+- API Keys của FANG không cần thiết nữa (FANG tự quản lý).
+- URL của FANG: `FANG_API_URL=http://localhost:8000`
+- Cloudinary (cho upload CV): `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
 
 **Bước 3: Khởi chạy Giao diện UI**
 ```bash
@@ -32,7 +34,7 @@ python -m streamlit run app.py
 *Giao diện web sẽ tự động bật lên qua địa chỉ `http://localhost:8501`.*
 
 ## 2. Kịch Bản Test Mẫu Hiện Tại (HR Demo)
-Do nền tảng này sử dụng chung nguồn Data với hệ thống `micareer_lite_db` rẽ nhánh từ FANG, bạn có thể thực hiện kiểm thử RAG theo kịch bản chuẩn nhất hiện có:
+Do nền tảng này sử dụng chung nguồn Data với hệ thống `micareer_lite_db` rẽ nhánh từ FANG, có thể thực hiện kiểm thử RAG theo kịch bản chuẩn nhất hiện có:
 
 *   **Tài khoản HR Công Ty VNG Demo:**
     *   **Tên đăng nhập:** `hr_vng`
@@ -46,5 +48,12 @@ Do nền tảng này sử dụng chung nguồn Data với hệ thống `micareer
 5. Hãy chọn Tier 2 hoặc Tier 3, sau đó nhập Prompt: *"Dựa vào CV, Hưng có kinh nghiệm sử dụng thư viện Langchain và hệ cơ sở dữ liệu Vector Database không?"* để lấy kết quả.
 
 ## 3. Kho Tài Liệu Vận Hành
-- Khái quát kiến trúc AI truy xuất DB: [Chiến lược RAG (rag_strategy.md)](./docs/rag_strategy.md)
-- Hướng dẫn thiết kế UX và Quản trị State: [Hướng dẫn Luồng UI System](./docs/hr_guide.md)
+
+**Tài liệu hiện hành:**
+- Chiến lược luồng ứng viên và upload CV: [candidate_apply_strategy.md](./docs/candidate_apply_strategy.md)
+- **API contract của FANG v2** (tham chiếu): [FANG/docs/integration_strategy.md](../FANG/docs/integration_strategy.md)
+- **Chiến lược RAG query** (tham chiếu): [FANG/docs/rag_query_strategy.md](../FANG/docs/rag_query_strategy.md)
+
+**Lưu trữ (archive — phác hiện cũ):**
+- [docs/archive/rag_strategy_v1.md](./docs/archive/rag_strategy_v1.md) — Kiến trúc RAG cũ (Direct-DB, 3-tier)
+- [docs/archive/hr_guide_v1.md](./docs/archive/hr_guide_v1.md) — Hướng dẫn UI cũ
