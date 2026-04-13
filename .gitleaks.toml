@@ -1,0 +1,10 @@
+title = "Gitleaks config for miCareer-mini"
+
+[[allowlists]]
+description = "Allow .env.example"
+paths = [".env.example"]
+
+[[rules]]
+id = "generic-api-key"
+description = "Generic API Key"
+regex = '''(?i)(api_key|apikey|secret|password)[="':\s]+([a-zA-Z0-9_\-]{16,})'''
