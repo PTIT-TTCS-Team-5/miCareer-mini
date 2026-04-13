@@ -1,25 +1,35 @@
-# miCareer-mini RAG Strategy
+# Chiến Lược Retrieval-Augmented Generation (RAG) (Frontend - Pha Tích Hợp)
 
-## Tổng quan Kiến trúc
+Tài liệu này định nghĩa kiến trúc **"Direct-DB Retrieval"** cho quy trình truy vấn và sinh câu trả lời trong dự án `miCareer-mini`, đóng vai trò là lớp Frontend tương tác với AI Core của FANG.
 
-`miCareer-mini` hoạt động như một hệ thống frontend cho FANG, đồng thời chứa logic trực tiếp xử lý quy trình Retrieval-Augmented Generation (RAG).
+Kiến trúc này chủ trương tận dụng tối đa cơ sở hạ tầng có sẵn (PostgreSQL `pgvector`) và lược bỏ các vector database trung gian để đạt độ trễ thấp và sự đồng bộ tuyệt đối với Pipeline Ingestion của FANG.
 
-## 1. Cơ chế Chunking và Embedding (Nguồn từ FANG)
-- CV của ứng viên sẽ được FANG chia nhỏ (Chunking) theo Semantic.
-- Các Chunk này được FANG dùng `text-embedding-3-small` để chuyển đổi thành vector (1024 chiều).
-- Toàn bộ được lưu tại bảng `AIDOCUMENTCHUNK` trên PostgreSQL bằng extension `pgvector`.
+## 1. Nguyên Tắc Cốt Lõi
+* **Bám sát Hệ sinh thái FANG:** Không xây dựng lại các tính năng mà FANG đã phát triển (Parser, Embedder). Hệ thống chỉ thực thi truy xuất và tạo sinh dựa trên tài nguyên của FANG.
+* **Direct Database Vector Search:** Sử dụng toán tử Cosine Similarity (`<=>`) của pgvector để tính khoảng cách ngay tại tầng SQL, xử lý logic tối ưu hiệu năng ngay trên Memory của PostgreSQL thay vì query ra Python.
+* **Tối Ưu Token Cost Đa Tầng:** Áp dụng hệ thống phân bậc cấu trúc mô hình (Multi-Tier LLM Architecture) để cân đối khéo léo giữa chi phí, tốc độ phản hồi và độ khó của câu hỏi nhân sự.
+* **Stateful Chat Memory:** Giữ nguyên được bối cảnh trò chuyện (Context) cho HR mà không can thiệp liên tục vào Read/Write Log CSDL bằng cách áp dụng lưu trữ In-memory thông minh.
 
-## 2. Chiến lược Truy xuất (Retrieval)
-Thay vì dùng database vector cồng kềnh, `miCareer-mini` trực tiếp kết nối DB và sử dụng phép toán `<=>` (Khoảng cách Cosine) của pgvector:
+## 2. Pipeline Truy Xuất Sinh Tự Động (RAG Pipeline)
 
-1. **User Prompt Embedding**: Khi HR gõ prompt (VD: "Đánh giá ứng viên"), hệ thống sẽ dùng chính `text-embedding-3-small` để nhúng câu prompt.
-2. **K-Nearest Neighbors (KNN)**: Truy vấn SQL sẽ tìm Top `K` (Mặc định: 3) chunks chứa nội dung liên đới nhất đến câu prompt.
-3. **Lọc theo Applicant**: Quá trình tìm kiếm được scope chặt trong ngữ cảnh `jobAppId` hiện tại, đảm bảo context luôn nạp đúng CV.
+### Bước 2.1: Mã hóa Yêu cầu (Prompt Embedding)
+Hệ thống sử dụng cơ chế nhúng thời gian thực. Khi HR nhập vào câu lệnh (Ví dụ: "Hãy tổng hợp lại kinh nghiệm ứng dụng RAG của bạn này"), `miCareer-mini` sẽ:
+1. Gửi chuỗi text thô lên API nhúng `text-embedding-3-small` để chuyển hóa câu lệnh của HR thành vector 1024 chiều.
+2. Truy xuất bắt buộc áp dụng **Strict Type Casting** ép kiểu về `halfvec` (Lượng tử hóa vô hướng của FANG) khi giao tiếp với cấu trúc schema có sẵn để PostgreSQL không bị lỗi type-mismatch.
 
-## 3. Tạo sinh nội dung (Generation & Model Tiers)
-`miCareer-mini` áp dụng chuẩn 3 Tier từ hệ thống FANG để điều phối chất lượng và chi phí:
-- **Tier 1 (Gemini Flash)**: Phù hợp hỏi nhanh, phân tích tổng quan CV.
-- **Tier 2 (GPT-5.4 mini)**: Cân bằng thời gian/chất lượng cho đánh giá kỹ năng.
-- **Tier 3 (Claude 4.5 Haiku)**: Suy luận logic chậm nhưng chính xác nhất.
+### Bước 2.2: K-Nearest Neighbors Retrieval
+Khối vector sinh ra sẽ được ném thẳng vào câu truy vấn SQL tại PostgreSQL:
+* **Pre-filtering (Lọc Siêu Dữ Liệu):** Áp dụng mệnh đề `WHERE jobAppId = %s` để bó gọn không gian vector. Lệnh này hoạt động cực tốt nhờ index B-Tree cơ sở, khiến query không bị lạc trong biển CV của hệ thống.
+* **Distance Sorting (Cosine <=>):** Mệnh đề `ORDER BY embedding <=> %s` quét toàn bộ chunk của đúng ứng viên đó và lấy ra Top `K` (Mặc định: 3) chunks chứa ngữ nghĩa đậm đặc, khớp với câu hỏi nhất.
+* Mảng kết quả trả về là Text đã được FANG ghim bối cảnh (Section-Pinning).
 
-LLM được cấp context (các chunks) và lịch sử chat từ Memory (quản lý bởi Streamlit Session State). Lịch sử chat được lưu trữ tạm thời nhưng mỗi prompt đều được ghi log vào `AIQUERYLOG` cho mục đích kiểm soát lượng truy vấn.
+### Bước 2.3: Multi-Tier Generation (Tự động Sinh Câu Trả Lời)
+Dựa trên Option mà HR lựa chọn, Context (Top K chunks) cùng với lịch sử trò chuyện được nén gọn và đẩy vào một trong 3 trụ cột LLM (Sử dụng LangChain):
+* **Tier 1 (Gemini Flash):** Tốc độ quét hồ sơ siêu âm, thích hợp để review tính tổng quan (Overview), checklist kỹ năng nhanh.
+* **Tier 2 (GPT-5.4 mini):** Cân bằng giữa chi phí/độ chuẩn xác. Phân tích chi tiết và sâu xát hơn về kiến trúc công nghệ hoặc độ khớp JD.
+* **Tier 3 (Claude 4.5 Haiku):** Độ hiểu văn bản (Reading Comprehension) xuất sắc nhất, có thể soi xét chi tiết lỗ hổng thời gian (gap) và kinh nghiệm thực hoặc đánh giá Culture fit.
+
+## 3. Kiến Trúc Giám Sát Truy Vấn
+Mọi tương tác hoàn thành không bị Drop mà phải trải qua cơ chế Audit-Log (Ghi vết minh bạch) vào bảng `AIQUERYLOG`. Mục đích chiến lược:
+*  Tạo ra bộ Dataset tương tác thực tế giữa nghiệp vụ HR với AI.
+*  Hệ thống FANG có thể sử dụng Dataset này trong tương lai để Re-train hoặc Fine-tune (SFT) các mô hình Open-Source Model (ví dụ: Llama 3) triển khai nội bộ, tiến gần đến Self-hosted RAG.
