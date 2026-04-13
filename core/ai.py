@@ -25,7 +25,7 @@ def get_llm(model_tier: str):
     """
     if "Gemini Flash" in model_tier:
         # Tên model có thể chưa chính thức nhưng vẫn hardcode theo yêu cầu
-        return ChatGoogleGenerativeAI(model="gemini-1.5-flash")
+        return ChatGoogleGenerativeAI(model="gemini-3.1-flash-lite-preview")
     elif "GPT-5.4 mini" in model_tier:
         return ChatOpenAI(model="gpt-5.4-mini")
     elif "Claude 4.5 Haiku" in model_tier:

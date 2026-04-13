@@ -274,10 +274,10 @@ def get_ingestion_status_for_app(job_app_id: int) -> dict | None:
 ```mermaid
 graph LR
     A[miCareer-mini] -->|Upload PDF| B[Cloudinary]
-    A -->|CRUD relational| C[(PostgreSQL)]
-    A -->|Ingestion + Chat| D[FANG API]
-    D -->|Download PDF| B
-    D -->|AI pipeline| C
+    A -->|CRUD<br/>relational| C[(PostgreSQL)]
+    A -->|Ingestion<br/>+ Chat| D[FANG API]
+    D -->|Download<br/>PDF| B
+    D -->|AI<br/>pipeline| C
 ```
 
 | Dependency | Mục đích | Cần thiết khi |
