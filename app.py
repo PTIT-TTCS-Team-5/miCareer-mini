@@ -118,8 +118,10 @@ def page_app_detail():
         st.write(f"📌 **Trạng thái:** {detail['stat']}")
         st.write(f"📄 **CV URL:** [Link Cloudinary]({detail['cvsnapurl']})")
         if detail["cvsnapurl"]:
-            # Render file qua iframe (áp dụng tốt với đuôi pdf hiện tại)
-            st.components.v1.iframe(src=detail["cvsnapurl"], height=600, scrolling=True)
+            # Dùng Google Docs Viewer bọc URL để lách X-Frame-Options bị block bởi Edge/Chrome
+            pdf_url = detail["cvsnapurl"]
+            viewer_url = f"https://docs.google.com/viewer?url={pdf_url}&embedded=true"
+            st.components.v1.iframe(src=viewer_url, height=600, scrolling=True)
 
     # Cột 2: Giao diện Chat RAG
     with col2:

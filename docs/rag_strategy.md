@@ -4,7 +4,53 @@ Tài liệu này định nghĩa kiến trúc **"Direct-DB Retrieval"** cho quy t
 
 Kiến trúc này chủ trương tận dụng tối đa cơ sở hạ tầng có sẵn (PostgreSQL `pgvector`) và lược bỏ các vector database trung gian để đạt độ trễ thấp và sự đồng bộ tuyệt đối với Pipeline Ingestion của FANG.
 
-## 1. Nguyên Tắc Cốt Lõi
+## 1. Tương tác hệ thống (miCareer-mini & FANG AI Core)
+
+```mermaid
+sequenceDiagram
+    participant HR as Quản trị viên (HR)
+    participant Mini as miCareer-mini (Streamlit)
+    participant DB as PostgreSQL (micareer_lite_db)
+    participant Fang as FANG AI Core (FastAPI)
+    
+    Note over Fang,DB: Background Process (Trước khi HR vào)
+    Fang->>Fang: Parse PDF & HTML
+    Fang->>Fang: Semantic Document Chunking
+    Fang->>DB: Ghi Vector (pgvector) vào AIDOCUMENTCHUNK
+
+    Note over HR,Mini: Luồng thao tác trực tiếp của HR
+    HR->>Mini: Đăng nhập & Chọn Ứng viên
+    Mini->>DB: Load thông tin cơ bản
+    DB-->>Mini: Trả về state hồ sơ
+    Mini-->>HR: Giao diện Workflow Đánh giá RAG
+```
+
+## 2. Đường ống RAG Pipeline nội bộ (Direct-DB Retrieval)
+
+Thay vì dùng database vector cồng kềnh ngoài, `miCareer-mini` trực tiếp kết nối DB và sử dụng phép toán `<=>` (Khoảng cách Cosine) của pgvector:
+
+```mermaid
+flowchart TD
+    A[HR Nhập Prompt] --> B{Streamlit State}
+    B --> C[Module Tích hợp LangChain]
+    C -->|text-embedding-3-small| D[Vectorized Prompt (1024_d)]
+    
+    D --> E[(PostgreSQL pgvector)]
+    E -->|Pre-filter jobAppId| F[B-Tree Indexing]
+    F -->|Cosine Distance <=>| G[Khớp 3 Target Chunks tốt nhất]
+    
+    G --> H[Ghép Context + Lịch sử Chat]
+    H --> I{Chọn LLM Model}
+    I -->|Tier 1| J(Gemini Flash)
+    I -->|Tier 2| K(GPT-5.4 mini)
+    I -->|Tier 3| L(Claude 4.5 Haiku)
+    
+    J & K & L --> M[Sinh Phản Hồi]
+    M --> N[Lưu AIQUERYLOG]
+    N --> O[Hiển thị kết quả cho HR]
+```
+
+## 3. Nguyên Tắc Cốt Lõi
 * **Bám sát Hệ sinh thái FANG:** Không xây dựng lại các tính năng mà FANG đã phát triển (Parser, Embedder). Hệ thống chỉ thực thi truy xuất và tạo sinh dựa trên tài nguyên của FANG.
 * **Direct Database Vector Search:** Sử dụng toán tử Cosine Similarity (`<=>`) của pgvector để tính khoảng cách ngay tại tầng SQL, xử lý logic tối ưu hiệu năng ngay trên Memory của PostgreSQL thay vì query ra Python.
 * **Tối Ưu Token Cost Đa Tầng:** Áp dụng hệ thống phân bậc cấu trúc mô hình (Multi-Tier LLM Architecture) để cân đối khéo léo giữa chi phí, tốc độ phản hồi và độ khó của câu hỏi nhân sự.
