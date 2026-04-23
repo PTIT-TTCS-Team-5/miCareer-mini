@@ -480,7 +480,7 @@ def page_candidate_apply():
             # 3. Trigger FANG ingestion
             try:
                 ingest_result = fang_client.trigger_ingestion(job_app_id, cv_to_use)
-                fang_job_id = ingest_result.get("jobId")
+                fang_job_id = ingest_result.get("indexJobId")
                 st.info(f"⏳ FANG đang xử lý CV... (Job ID: `{fang_job_id}`)")
             except Exception as e:
                 st.warning(

@@ -101,7 +101,7 @@ def get_ingestion_job_for_app(job_app_id: int):
         with conn.cursor() as cur:
             cur.execute(
                 """
-                SELECT jobId, stat, errorMsg, createdAt, updatedAt
+                SELECT indexJobId, stat, errorMsg, createdAt, finishedAt
                 FROM AIINDEXJOB
                 WHERE jobAppId = %s
                 ORDER BY createdAt DESC
@@ -144,7 +144,7 @@ def get_all_job_postings():
             cur.execute(
                 """
                 SELECT jp.jobPostId, jp.title, jp.description,
-                       jp.requirements, jp.expAt, c.compName
+                       jp.expAt, c.compName
                 FROM JOBPOSTING jp
                 JOIN COMPANY c ON jp.compId = c.compId
                 WHERE jp.expAt >= CURRENT_DATE
