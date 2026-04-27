@@ -60,12 +60,12 @@ def go(page: str):
 
 MODEL_MODES = {
     "🤖 Auto-Lite (Gemini → GPT → Claude)": "auto-lite",
-    "🤖 Auto-Pro (Gemini Pro → GPT-5.4)": "auto-pro",
+    "🤖 Auto-Pro (Gemini Pro → GPT-5.5)": "auto-pro",
     "💚 Gemini Flash Lite": "gemini-flash",
     "💚 GPT-5.4 mini": "gpt-mini",
     "💚 Claude 4.5 Haiku": "claude-haiku",
     "🔶 Gemini 3.1 Pro": "gemini-pro",
-    "🔶 GPT-5.4 (Flagship)": "gpt-full",
+    "🔶 GPT-5.5 (Flagship)": "gpt-full",
 }
 
 
