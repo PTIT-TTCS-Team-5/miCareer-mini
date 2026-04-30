@@ -2,6 +2,11 @@
 
 Trả về public URL để lưu vào JOBAPPLICATION.cvSnapUrl
 và trigger FANG ingestion pipeline.
+
+Cấu hình:
+- CLOUDINARY_UPLOAD_FOLDER: tên folder đích (ttcs, nmaiex, v.v.)
+  Cloudinary mặc định upload vào Home folder, nên chỉ cần định folder name
+- Đường dẫn thực tế trên Cloudinary sẽ là: ttcs/ hoặc nmaiex/
 """
 
 from __future__ import annotations
@@ -21,7 +26,9 @@ cloudinary.config(
     secure=True,
 )
 
-_FOLDER = "Home/miCareer-mini"
+# Đọc từ .env, mặc định là "ttcs" nếu không cấu hình
+# Không cần thêm "Home/" vì Cloudinary đã mặc định upload vào Home
+_FOLDER = os.getenv("CLOUDINARY_UPLOAD_FOLDER", "ttcs")
 
 
 def upload_cv_pdf(file_bytes: bytes, filename: str) -> str:
@@ -36,6 +43,11 @@ def upload_cv_pdf(file_bytes: bytes, filename: str) -> str:
 
     Raises:
         RuntimeError nếu upload thất bại
+
+    Chi tiết:
+        - Folder được cấu hình qua CLOUDINARY_UPLOAD_FOLDER trong .env
+        - Cloudinary mặc định upload vào Home folder
+        - URL sẽ là: https://res.cloudinary.com/.../upload/ttcs/filename.pdf
     """
     # Sanitize filename để làm public_id
     base_name = os.path.splitext(filename)[0]
@@ -44,7 +56,7 @@ def upload_cv_pdf(file_bytes: bytes, filename: str) -> str:
     result = cloudinary.uploader.upload(
         file_bytes,
         resource_type="raw",  # PDF là raw resource
-        folder=_FOLDER,
+        folder=_FOLDER,  # "ttcs" or "nmaiex" (không cần thêm Home/)
         public_id=safe_name,
         overwrite=True,  # overwrite nếu upload lại
         use_filename=True,
