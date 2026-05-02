@@ -6,7 +6,7 @@ và trigger FANG ingestion pipeline.
 Cấu hình:
 - CLOUDINARY_UPLOAD_FOLDER: tên folder đích (ttcs, nmaiex, v.v.)
   Cloudinary mặc định upload vào Home folder, nên chỉ cần định folder name
-- Đường dẫn thực tế trên Cloudinary sẽ là: ttcs/ hoặc nmaiex/
+- Đường dẫn thực tế trên Cloudinary sẽ là: Home/ttcs/ hoặc Home/nmaiex/
 """
 
 from __future__ import annotations
