@@ -95,6 +95,23 @@ def get_application_detail(job_app_id: int):
             return cur.fetchone()
 
 
+def get_application_by_job_and_candidate(job_post_id: int, candidate_id: int):
+    """Lấy application khi biết job và candidate ID."""
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT ja.jobappid, ja.cvsnapurl, ja.stat, ja.appliedat,
+                       u.fname, u.lname, u.email
+                FROM jobapplication ja
+                JOIN "user" u ON ja.candidateid = u.userid
+                WHERE ja.jobpostid = %s AND ja.candidateid = %s
+            """,
+                (job_post_id, candidate_id),
+            )
+            return cur.fetchone()
+
+
 def get_ingestion_job_for_app(job_app_id: int):
     """Lấy AIINDEXJOB mới nhất cho 1 jobApp (dùng ở HR để check status)."""
     with get_connection() as conn:
@@ -153,6 +170,24 @@ def get_all_job_postings():
             """,
             )
             return cur.fetchall()
+
+
+def get_job_posting_detail(job_post_id: int):
+    """Lấy chi tiết đầy đủ 1 job posting."""
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT jp.jobpostid, jp.title, jp.description, jp.expat,
+                       jp.minsalary, jp.maxsalary, jp.compid,
+                       c.compname
+                FROM jobposting jp
+                JOIN company c ON jp.compid = c.compid
+                WHERE jp.jobpostid = %s
+            """,
+                (job_post_id,),
+            )
+            return cur.fetchone()
 
 
 def get_candidate_existing_cv(candidate_id: int):

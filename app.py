@@ -46,6 +46,8 @@ _defaults = {
     # NMAIex additions
     "nmaiex_master": None,  # cache master data (provinces/skills/levels/categories)
     "hr_edit_job_id": None,  # job đang được HR chỉnh sửa
+    "selected_job_detail": None,  # Candidate side job detail modal
+    "selected_job_data": None,  # Candidate side job data for modal
     # Phase 3: Ranking
     "hr_ranking_job_id": None,  # job HR đang xem AI ranking
     "hr_ranking_job_title": None,
@@ -159,28 +161,85 @@ def page_hr_jobs():
 
     for j in jobs:
         with st.container(border=True):
-            col1, col2, col3, col4 = st.columns([4, 1, 1, 1])
+            col1, col2, col3 = st.columns([4, 1, 1])
             with col1:
                 st.markdown(f"**{j['title']}**")
                 st.caption(f"Hết hạn: {j['expat']}")
             with col2:
-                if st.button("Xem ứng viên", key=f"hr_job_{j['jobpostid']}"):
+                if st.button(
+                    "Xem job",
+                    key=f"hr_view_job_{j['jobpostid']}",
+                    use_container_width=True,
+                ):
+                    st.session_state.selected_job_id = j["jobpostid"]
+                    go("hr_job_view")
+            with col3:
+                if st.button(
+                    "Xem ứng viên",
+                    key=f"hr_app_list_{j['jobpostid']}",
+                    use_container_width=True,
+                ):
                     st.session_state.selected_job_id = j["jobpostid"]
                     go("hr_applications")
-            with col3:
-                if st.button("✅ AI Ranking", key=f"hr_rank_{j['jobpostid']}"):
-                    st.session_state.hr_ranking_job_id = j["jobpostid"]
-                    st.session_state.hr_ranking_job_title = j["title"]
-                    go("hr_ai_ranking")
-            with col4:
-                if st.button("✏️ Sửa Job", key=f"hr_edit_{j['jobpostid']}"):
-                    st.session_state.hr_edit_job_id = j["jobpostid"]
-                    go("hr_job_edit")
 
     st.divider()
-    if st.button("🚪 Đăng xuất", key="logout_hr"):
+    if st.button("🚪 Đăng xuất", key="logout_hr", use_container_width=True):
         st.session_state.hr_user = None
         go("home")
+
+
+def page_hr_job_view():
+    """Trang xem chi tiết job của HR."""
+    if st.button("← Quay lại danh sách Job", key="back_hr_jobs_from_view"):
+        go("hr_jobs")
+
+    job_id = st.session_state.selected_job_id
+    if not job_id:
+        st.error("Không có job nào được chọn.")
+        go("hr_jobs")
+        return
+
+    # Load job detail từ DB
+    job = db.get_job_posting_detail(job_id)
+    if not job:
+        st.error("Không tìm thấy job.")
+        go("hr_jobs")
+        return
+
+    st.title(f"📋 {job['title']}")
+    st.divider()
+
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        st.markdown("### Thông tin Job")
+        st.write(f"**Công ty:** {job.get('compname', 'N/A')}")
+        st.write(f"**Hết hạn nộp:** {job['expat']}")
+        if job.get("description"):
+            st.markdown("**Mô tả công việc:**")
+            st.markdown(job.get("description", ""))
+        if job.get("minSalary") or job.get("maxSalary"):
+            min_sal = job.get("minSalary", 0)
+            max_sal = job.get("maxSalary", 0)
+            st.markdown(f"**Mức lương:** {min_sal:,.0f} — {max_sal:,.0f} VNĐ")
+
+    with col2:
+        st.markdown("### Hành động")
+        if st.button(
+            "✏️ Sửa Job",
+            type="primary",
+            use_container_width=True,
+            key=f"edit_job_detail_{job_id}",
+        ):
+            st.session_state.hr_edit_job_id = job_id
+            go("hr_job_edit")
+
+        if st.button(
+            "👥 Danh sách ứng viên",
+            use_container_width=True,
+            key=f"apps_from_view_{job_id}",
+        ):
+            st.session_state.selected_job_id = job_id
+            go("hr_applications")
 
 
 def page_hr_job_edit():
@@ -505,12 +564,34 @@ def _render_hr_ranking_tab(job_id: int):
                 key=f"rank_limit_{job_id}",
             )
 
+    # State variables for tab ranking
+    state_key_results = f"hr_ranking_results_tab_{job_id}"
+    state_key_warning = f"hr_ranking_warning_tab_{job_id}"
+    state_key_error = f"hr_ranking_error_tab_{job_id}"
+    state_key_returned = f"hr_ranking_returned_tab_{job_id}"
+    state_key_total = f"hr_ranking_total_tab_{job_id}"
+
+    if state_key_results not in st.session_state:
+        st.session_state[state_key_results] = None
+    if state_key_warning not in st.session_state:
+        st.session_state[state_key_warning] = None
+    if state_key_error not in st.session_state:
+        st.session_state[state_key_error] = None
+    if state_key_returned not in st.session_state:
+        st.session_state[state_key_returned] = 0
+    if state_key_total not in st.session_state:
+        st.session_state[state_key_total] = 0
+
     if st.button(
         "🚀 Chạy AI Ranking",
         type="primary",
         use_container_width=True,
         key=f"run_rank_{job_id}",
     ):
+        st.session_state[state_key_results] = None
+        st.session_state[state_key_warning] = None
+        st.session_state[state_key_error] = None
+
         params: dict = {"limit": filter_limit}
         if filter_prov:
             params["province_id"] = filter_prov
@@ -530,43 +611,70 @@ def _render_hr_ranking_tab(job_id: int):
                     total = len(candidates)
                     returned = len(candidates)
 
-                st.success(
-                    f"✅ Tìm thấy **{returned}** ứng viên phù hợp (pool: {total})"
-                )
-
-                if not candidates:
-                    st.info("Không có ứng viên phù hợp với bộ lọc hiện tại.")
-                    return
-
-                for i, c in enumerate(candidates, 1):
-                    score = c.get("match_score", 0)
-                    score_pct = f"{score * 100:.1f}%"
-                    name = c.get(
-                        "candidate_name", f"Candidate #{c.get('candidate_id', '?')}"
-                    )
-
-                    with st.container(border=True):
-                        col_rank, col_info, col_score = st.columns([1, 6, 2])
-                        with col_rank:
-                            medal = {1: "🥇", 2: "🥈", 3: "🥉"}.get(i, f"#{i}")
-                            st.markdown(f"## {medal}")
-                        with col_info:
-                            st.markdown(f"**{name}**")
-                            if c.get("candidate_id"):
-                                st.caption(f"Candidate ID: {c['candidate_id']}")
-                        with col_score:
-                            st.metric("Match Score", score_pct)
-                        _render_score_badge(c)
+                st.session_state[state_key_results] = candidates
+                st.session_state[state_key_returned] = returned
+                st.session_state[state_key_total] = total
 
             except Exception as e:
                 err = str(e)
                 if "404" in err:
-                    st.warning(
+                    st.session_state[state_key_warning] = (
                         "⚠️ Job này chưa có dữ liệu NMAIex (chưa được seed structured data). "
                         "Hãy vào **Sửa Job** → **Cài đặt** để cấu hình trước khi ranking."
                     )
                 else:
-                    st.error(f"❌ Lỗi khi gọi AI Ranking: {e}")
+                    st.session_state[state_key_error] = (
+                        f"❌ Lỗi khi gọi AI Ranking: {e}"
+                    )
+
+    # Render results
+    if st.session_state[state_key_warning]:
+        st.warning(st.session_state[state_key_warning])
+    if st.session_state[state_key_error]:
+        st.error(st.session_state[state_key_error])
+
+    if st.session_state[state_key_results] is not None:
+        candidates = st.session_state[state_key_results]
+        returned = st.session_state[state_key_returned]
+        total = st.session_state[state_key_total]
+
+        st.success(f"✅ Tìm thấy **{returned}** ứng viên phù hợp (pool: {total})")
+
+        if not candidates:
+            st.info("Không có ứng viên phù hợp với bộ lọc hiện tại.")
+        else:
+            for i, c in enumerate(candidates, 1):
+                score = c.get("match_score", 0)
+                score_pct = f"{score * 100:.1f}%"
+                name = c.get(
+                    "candidate_name", f"Candidate #{c.get('candidate_id', '?')}"
+                )
+                cand_id = c.get("candidate_id")
+
+                with st.container(border=True):
+                    col_rank, col_info, col_score, col_action = st.columns([1, 5, 2, 1])
+                    with col_rank:
+                        medal = {1: "🥇", 2: "🥈", 3: "🥉"}.get(i, f"#{i}")
+                        st.markdown(f"## {medal}")
+                    with col_info:
+                        st.markdown(f"**{name}**")
+                        if cand_id:
+                            st.caption(f"Candidate ID: {cand_id}")
+                    with col_score:
+                        st.metric("Match Score", score_pct)
+                    with col_action:
+                        if st.button(
+                            "Xem", key=f"rank_view_{cand_id}", use_container_width=True
+                        ):
+                            # Find the application for this candidate
+                            app = db.get_application_by_job_and_candidate(
+                                job_id, cand_id
+                            )
+                            if app:
+                                st.session_state.selected_app_id = app["jobappid"]
+                                st.session_state.conversation_id = None
+                                go("hr_app_detail")
+                _render_score_badge(c)
 
 
 def page_hr_ai_ranking():
@@ -595,31 +703,191 @@ def page_hr_applications():
     job_id = st.session_state.selected_job_id
     st.title("📋 Danh sách ứng viên")
 
-    # Tab: Danh sách thường và AI Ranking
-    tab_list, tab_rank = st.tabs(["💼 Danh sách ứng viên", "🤖 AI Ranking"])
+    master = _ensure_master_data()
 
-    with tab_list:
-        apps = db.get_applications_for_job(job_id)
-        if not apps:
-            st.info("Chưa có ứng viên nào cho job này.")
+    # --- Filters ---
+    with st.expander("⚙️ Bộ lọc nâng cao", expanded=False):
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            provinces_data = master.get("provinces", [])
+            region_map = {r["region_name"]: r for r in provinces_data}
+            sel_region_r = st.selectbox(
+                "Vùng", [""] + list(region_map.keys()), key=f"rank_region_{job_id}"
+            )
+            prov_list_r = region_map[sel_region_r]["provinces"] if sel_region_r else []
+            prov_opts_r = {"(Tất cả)": None} | {
+                p["province_name"]: p["province_id"] for p in prov_list_r
+            }
+            sel_prov_r = st.selectbox(
+                "Tỉnh/Thành phố", list(prov_opts_r.keys()), key=f"rank_prov_{job_id}"
+            )
+            filter_prov = prov_opts_r[sel_prov_r]
+        with col2:
+            work_mode_opts = {
+                "(Tất cả)": None,
+                "ONSITE": "ONSITE",
+                "HYBRID": "HYBRID",
+                "REMOTE": "REMOTE",
+            }
+            sel_wm_r = st.selectbox(
+                "Hình thức", list(work_mode_opts.keys()), key=f"rank_wm_{job_id}"
+            )
+            filter_wm = work_mode_opts[sel_wm_r]
+        with col3:
+            filter_limit = st.number_input(
+                "Số kết quả",
+                min_value=5,
+                max_value=100,
+                value=20,
+                step=5,
+                key=f"rank_limit_{job_id}",
+            )
+
+    st.divider()
+    st.markdown("### 🤖 AI Ranking — Xếp hạng ứng viên phù hợp nhất")
+    st.info(
+        "Hệ thống NMAIex sẽ xếp hạng tất cả ứng viên đã nộp đơn dựa trên "
+        "vector similarity, kỹ năng và mức độ phù hợp cấp bậc."
+    )
+
+    # State variables for application list ranking
+    state_key_results = f"hr_ranking_results_app_{job_id}"
+    state_key_warning = f"hr_ranking_warning_app_{job_id}"
+    state_key_error = f"hr_ranking_error_app_{job_id}"
+    state_key_returned = f"hr_ranking_returned_app_{job_id}"
+    state_key_total = f"hr_ranking_total_app_{job_id}"
+
+    if state_key_results not in st.session_state:
+        st.session_state[state_key_results] = None
+    if state_key_warning not in st.session_state:
+        st.session_state[state_key_warning] = None
+    if state_key_error not in st.session_state:
+        st.session_state[state_key_error] = None
+    if state_key_returned not in st.session_state:
+        st.session_state[state_key_returned] = 0
+    if state_key_total not in st.session_state:
+        st.session_state[state_key_total] = 0
+
+    if st.button(
+        "🚀 Chạy AI Ranking",
+        type="primary",
+        use_container_width=True,
+        key=f"run_rank_{job_id}",
+    ):
+        st.session_state[state_key_results] = None
+        st.session_state[state_key_warning] = None
+        st.session_state[state_key_error] = None
+
+        params: dict = {"limit": filter_limit}
+        if filter_prov:
+            params["province_id"] = filter_prov
+        if filter_wm:
+            params["work_mode"] = filter_wm
+
+        with st.spinner("⚙️ NMAIex đang tính toán ranking..."):
+            try:
+                result = nmaiex_client.get_candidates_ranking(job_id, params=params)
+                # API trả về dict hoặc list
+                if isinstance(result, dict):
+                    candidates = result.get("results", [])
+                    total = result.get("total_candidates", len(candidates))
+                    returned = result.get("returned", len(candidates))
+                else:
+                    candidates = result
+                    total = len(candidates)
+                    returned = len(candidates)
+
+                st.session_state[state_key_results] = candidates
+                st.session_state[state_key_returned] = returned
+                st.session_state[state_key_total] = total
+
+            except Exception as e:
+                err = str(e)
+                if "404" in err:
+                    st.session_state[state_key_warning] = (
+                        "⚠️ Job này chưa có dữ liệu NMAIex (chưa được seed structured data). "
+                        "Hãy vào **Sửa Job** → **Cài đặt** để cấu hình trước khi ranking."
+                    )
+                else:
+                    st.session_state[state_key_error] = (
+                        f"❌ Lỗi khi gọi AI Ranking: {e}"
+                    )
+
+    # Render results
+    if st.session_state[state_key_warning]:
+        st.warning(st.session_state[state_key_warning])
+    if st.session_state[state_key_error]:
+        st.error(st.session_state[state_key_error])
+
+    if st.session_state[state_key_results] is not None:
+        candidates = st.session_state[state_key_results]
+        returned = st.session_state[state_key_returned]
+        total = st.session_state[state_key_total]
+
+        st.success(f"✅ Tìm thấy **{returned}** ứng viên phù hợp (pool: {total})")
+
+        if not candidates:
+            st.info("Không có ứng viên phù hợp với bộ lọc hiện tại.")
         else:
-            for a in apps:
-                with st.container(border=True):
-                    col1, col2 = st.columns([5, 1])
-                    with col1:
-                        st.write(
-                            f"**{a['fname']} {a['lname']}** ({a['email']}) "
-                            f"— Trạng thái: `{a['stat']}` "
-                            f"— Nộp: {a['appliedat'].strftime('%Y-%m-%d') if a['appliedat'] else 'N/A'}"
-                        )
-                    with col2:
-                        if st.button("Đánh giá RAG", key=f"app_{a['jobappid']}"):
-                            st.session_state.selected_app_id = a["jobappid"]
-                            st.session_state.conversation_id = None
-                            go("hr_app_detail")
+            for i, c in enumerate(candidates, 1):
+                score = c.get("match_score", 0)
+                score_pct = f"{score * 100:.1f}%"
+                name = c.get(
+                    "candidate_name", f"Candidate #{c.get('candidate_id', '?')}"
+                )
+                cand_id = c.get("candidate_id")
 
-    with tab_rank:
-        _render_hr_ranking_tab(job_id)
+                with st.container(border=True):
+                    col_rank, col_info, col_score, col_action = st.columns([1, 5, 2, 1])
+                    with col_rank:
+                        medal = {1: "🥇", 2: "🥈", 3: "🥉"}.get(i, f"#{i}")
+                        st.markdown(f"## {medal}")
+                    with col_info:
+                        st.markdown(f"**{name}**")
+                        if cand_id:
+                            st.caption(f"Candidate ID: {cand_id}")
+                    with col_score:
+                        st.metric("Match Score", score_pct)
+                    with col_action:
+                        if st.button(
+                            "Xem",
+                            key=f"hr_rank_view_{cand_id}_{job_id}",
+                            use_container_width=True,
+                        ):
+                            # Find the application for this candidate
+                            app = db.get_application_by_job_and_candidate(
+                                job_id, cand_id
+                            )
+                            if app:
+                                st.session_state.selected_app_id = app["jobappid"]
+                                st.session_state.conversation_id = None
+                                go("hr_app_detail")
+                            else:
+                                st.error(
+                                    "❌ Không tìm thấy application cho ứng viên này!"
+                                )
+                _render_score_badge(c)
+
+    st.divider()
+    apps = db.get_applications_for_job(job_id)
+    if not apps:
+        st.info("Chưa có ứng viên nào cho job này.")
+    else:
+        st.markdown("### 💼 Danh sách ứng viên")
+        for a in apps:
+            with st.container(border=True):
+                col1, col2 = st.columns([5, 1])
+                with col1:
+                    st.write(
+                        f"**{a['fname']} {a['lname']}** ({a['email']}) "
+                        f"— Trạng thái: `{a['stat']}` "
+                        f"— Nộp: {a['appliedat'].strftime('%Y-%m-%d') if a['appliedat'] else 'N/A'}"
+                    )
+                with col2:
+                    if st.button("Đánh giá RAG", key=f"app_{a['jobappid']}"):
+                        st.session_state.selected_app_id = a["jobappid"]
+                        st.session_state.conversation_id = None
+                        go("hr_app_detail")
 
 
 def page_hr_app_detail():
@@ -830,61 +1098,45 @@ def page_login_candidate():
 def page_candidate_jobs():
     user = st.session_state.candidate_user
     st.title(f"👋 Xin chào, {user['fname']} {user['lname']}")
-    st.subheader("📢 Các vị trí đang tuyển dụng")
+    st.subheader("📢 Công việc đang tuyển dụng")
+    _ensure_master_data()
 
-    master = _ensure_master_data()
+    st.divider()
 
-    with st.expander("🔍 Lọc kết quả tìm kiếm (Bộ lọc AI)", expanded=False):
-        col1, col2 = st.columns(2)
-        with col1:
-            # Province
-            provinces_data = master.get("provinces", [])
-            region_map = {r["region_name"]: r for r in provinces_data}
-            sel_region = st.selectbox(
-                "Vùng", [""] + list(region_map.keys()), key="cand_sel_region"
-            )
-            prov_list = region_map[sel_region]["provinces"] if sel_region else []
-            prov_options = {p["province_name"]: p["province_id"] for p in prov_list}
-            st.selectbox(
-                "Tỉnh/Thành phố", [""] + list(prov_options.keys()), key="cand_sel_prov"
-            )
+    # Show/hide toggle for applied jobs (moved before AI recommendations)
+    show_applied = st.checkbox(
+        "✓ Hiển thị công việc đã ứng tuyển", value=True, key="show_applied_jobs"
+    )
 
-            # Level
-            levels_data = master.get("levels", [])
-            level_name_to_id = {
-                lvl["level_name"]: lvl["level_id"] for lvl in levels_data
-            }
-            st.selectbox(
-                "Cấp bậc", [""] + list(level_name_to_id.keys()), key="cand_sel_level"
-            )
+    st.divider()
+    # Phase 3 — Section gợi ý việc làm AI (lên trước)
+    _render_candidate_ai_jobs(user["userid"], show_applied)
 
-        with col2:
-            # Category
-            cats_data = master.get("categories", [])
-            cat_name_to_id = {c["category_name"]: c["category_id"] for c in cats_data}
-            st.multiselect("Danh mục", list(cat_name_to_id.keys()), key="cand_sel_cats")
+    st.divider()
 
-            # Skills
-            skills_data = master.get("skills", [])
-            skill_name_to_id = {s["skill_name"]: s["skill_id"] for s in skills_data}
-            st.multiselect(
-                "Kỹ năng", list(skill_name_to_id.keys()), key="cand_sel_skills"
-            )
+    # Get ALL jobs, then filter based on toggle
+    all_jobs = db.get_all_job_postings()
+    if show_applied:
+        jobs = all_jobs
+    else:
+        jobs = [
+            j for j in all_jobs if not db.has_applied(user["userid"], j["jobpostid"])
+        ]
 
-        st.button(
-            "Áp dụng bộ lọc (Sắp ra mắt)", disabled=True, use_container_width=True
-        )
-
-    jobs = db.get_all_job_postings()
     if not jobs:
-        st.info("Hiện tại chưa có vị trí tuyển dụng nào.")
+        if show_applied:
+            st.info("Hiện tại chưa có vị trí tuyển dụng nào.")
+        else:
+            st.info("Bạn đã ứng tuyển hết tất cả các vị trí, hoặc chưa có vị trí mới.")
         return
 
     for j in jobs:
+        already_applied = db.has_applied(user["userid"], j["jobpostid"])
         with st.container(border=True):
             col1, col2 = st.columns([5, 1])
             with col1:
-                st.markdown(f"**{j['title']}** — 🏢 {j.get('compname', 'N/A')}")
+                title_badge = f"**{j['title']}**" + (" ✓" if already_applied else "")
+                st.markdown(f"{title_badge} — 🏢 {j.get('compname', 'N/A')}")
                 if j.get("description"):
                     st.caption(
                         j["description"][:200] + "..."
@@ -893,18 +1145,25 @@ def page_candidate_jobs():
                     )
                 st.caption(f"Hạn nộp: {j['expat']}")
             with col2:
-                already_applied = db.has_applied(user["userid"], j["jobpostid"])
-                if already_applied:
-                    st.success("✅ Đã nộp")
-                else:
-                    if st.button("Nộp CV", key=f"apply_{j['jobpostid']}"):
-                        st.session_state.apply_job_id = j["jobpostid"]
-                        st.session_state.apply_job_title = j["title"]
-                        go("candidate_apply")
-
-    st.divider()
-    # Phase 3 — Section gợi ý việc làm AI
-    _render_candidate_ai_jobs(user["userid"])
+                col2a, col2b = st.columns(2)
+                with col2a:
+                    if st.button(
+                        "Xem", key=f"view_{j['jobpostid']}", use_container_width=True
+                    ):
+                        st.session_state.selected_job_id = j["jobpostid"]
+                        go("candidate_job_detail")
+                with col2b:
+                    if not already_applied:
+                        if st.button(
+                            "Nộp CV",
+                            key=f"apply_{j['jobpostid']}",
+                            use_container_width=True,
+                        ):
+                            st.session_state.apply_job_id = j["jobpostid"]
+                            st.session_state.apply_job_title = j["title"]
+                            go("candidate_apply")
+                    else:
+                        st.caption("✓ Đã nộp")
 
     st.divider()
     col_nav1, col_nav2 = st.columns(2)
@@ -917,7 +1176,7 @@ def page_candidate_jobs():
             go("home")
 
 
-def _render_candidate_ai_jobs(candidate_id: int):
+def _render_candidate_ai_jobs(candidate_id: int, show_applied: bool = True):
     """Phase 3 — Section gợi ý công việc phù hợp cho ứng viên (C→J ranking)."""
     master = _ensure_master_data()
     st.markdown("### 🎯 Việc làm phù hợp với bạn")
@@ -954,9 +1213,20 @@ def _render_candidate_ai_jobs(candidate_id: int):
                 "Số gợi ý", min_value=5, max_value=50, value=10, step=5, key="cj_limit"
             )
 
+    # Initialize session state for recommendation list
+    if "cj_recommendations" not in st.session_state:
+        st.session_state.cj_recommendations = None
+    if "cj_recommendations_warning" not in st.session_state:
+        st.session_state.cj_recommendations_warning = None
+    if "cj_recommendations_error" not in st.session_state:
+        st.session_state.cj_recommendations_error = None
+
     if st.button(
         "✨ Xem gợi ý AI", type="primary", use_container_width=True, key="run_cj_rank"
     ):
+        st.session_state.cj_recommendations = None
+        st.session_state.cj_recommendations_warning = None
+        st.session_state.cj_recommendations_error = None
         params_c: dict = {"limit": filter_limit_c}
         if filter_prov_c:
             params_c["province_id"] = filter_prov_c
@@ -970,40 +1240,129 @@ def _render_candidate_ai_jobs(candidate_id: int):
                     job_list = result_c.get("results", [])
                 else:
                     job_list = result_c
-
-                if not job_list:
-                    st.info(
-                        "Chưa tìm thấy việc làm phù hợp. Hãy cập nhật CV và hồ sơ của bạn!"
-                    )
-                    return
-
-                st.success(f"✅ Tìm thấy **{len(job_list)}** việc làm phù hợp với bạn:")
-                for j in job_list:
-                    score = j.get("match_score", 0)
-                    score_pct = f"{score * 100:.1f}%"
-                    title = j.get("job_title") or j.get("title", "?")
-                    company = j.get("company_name") or j.get("compname", "")
-                    with st.container(border=True):
-                        c1, c2 = st.columns([6, 2])
-                        with c1:
-                            st.markdown(
-                                f"**{title}**" + (f" — 🏢 {company}" if company else "")
-                            )
-                            if j.get("work_loc"):
-                                st.caption(f"📍 {j['work_loc']}")
-                        with c2:
-                            st.metric("Match Score", score_pct)
-                        _render_score_badge(j)
-
+                st.session_state.cj_recommendations = job_list
             except Exception as e:
                 err = str(e)
                 if "404" in err:
-                    st.warning(
+                    st.session_state.cj_recommendations_warning = (
                         "⚠️ Hồ sơ của bạn chưa được NMAIex xử lý. "
                         "Hãy upload CV và đợi hệ thống phân tích xong."
                     )
                 else:
-                    st.error(f"❌ Lỗi gợi ý AI: {e}")
+                    st.session_state.cj_recommendations_error = f"❌ Lỗi gợi ý AI: {e}"
+
+    # Render results
+    if st.session_state.cj_recommendations_warning:
+        st.warning(st.session_state.cj_recommendations_warning)
+    if st.session_state.cj_recommendations_error:
+        st.error(st.session_state.cj_recommendations_error)
+
+    if st.session_state.cj_recommendations is not None:
+        job_list = st.session_state.cj_recommendations
+        if not job_list:
+            st.info("Chưa tìm thấy việc làm phù hợp. Hãy cập nhật CV và hồ sơ của bạn!")
+        else:
+            st.success(f"✅ Tìm thấy **{len(job_list)}** việc làm phù hợp với bạn:")
+            for idx, j in enumerate(job_list):
+                score = j.get("match_score", 0)
+                score_pct = f"{score * 100:.1f}%"
+                title = j.get("job_title") or j.get("title", "?")
+                company = j.get("company_name") or j.get("compname", "")
+                job_id_rec = j.get("job_id") or j.get("jobpostid")
+                already_applied = (
+                    db.has_applied(candidate_id, job_id_rec) if job_id_rec else False
+                )
+
+                # Skip if job already applied and show_applied is False
+                if already_applied and not show_applied:
+                    continue
+
+                with st.container(border=True):
+                    c1, c2, c3 = st.columns([5, 1, 2])
+                    with c1:
+                        st.markdown(
+                            f"**{title}**" + (f" — 🏢 {company}" if company else "")
+                        )
+                        if j.get("work_loc"):
+                            st.caption(f"📍 {j['work_loc']}")
+                    with c2:
+                        st.metric("Match Score", score_pct)
+                    with c3:
+                        if already_applied:
+                            st.caption("✓ Đã nộp")
+                        else:
+                            col3a, col3b = st.columns(2)
+                            with col3a:
+                                if st.button(
+                                    "Xem",
+                                    key=f"rec_view_{idx}_{job_id_rec}",
+                                    use_container_width=True,
+                                ):
+                                    st.session_state.selected_job_id = job_id_rec
+                                    go("candidate_job_detail")
+                            with col3b:
+                                if st.button(
+                                    "Nộp CV",
+                                    key=f"rec_apply_{idx}_{job_id_rec}",
+                                    use_container_width=True,
+                                ):
+                                    st.session_state.apply_job_id = job_id_rec
+                                    st.session_state.apply_job_title = title
+                                    go("candidate_apply")
+                _render_score_badge(j)
+
+
+def page_candidate_job_detail():
+    """Trang xem chi tiết job của ứng viên."""
+    user = st.session_state.candidate_user
+
+    if st.button("← Quay lại danh sách Job", key="back_cand_jobs_from_detail"):
+        go("candidate_jobs")
+
+    job_id = st.session_state.selected_job_id
+    if not job_id:
+        st.error("Không có job nào được chọn.")
+        go("candidate_jobs")
+        return
+
+    # Load job detail từ DB
+    job = db.get_job_posting_detail(job_id)
+    if not job:
+        st.error("Không tìm thấy job.")
+        go("candidate_jobs")
+        return
+
+    st.title(f"📋 {job['title']}")
+    st.divider()
+
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        st.markdown("### Thông tin Job")
+        st.write(f"**Công ty:** {job.get('compname', 'N/A')}")
+        st.write(f"**Hết hạn nộp:** {job['expat']}")
+        if job.get("description"):
+            st.markdown("**Mô tả công việc:**")
+            st.markdown(job.get("description", ""))
+        if job.get("minSalary") or job.get("maxSalary"):
+            min_sal = job.get("minSalary", 0)
+            max_sal = job.get("maxSalary", 0)
+            st.markdown(f"**Mức lương:** {min_sal:,.0f} — {max_sal:,.0f} VNĐ")
+
+    with col2:
+        st.markdown("### Hành động")
+        already_applied = db.has_applied(user["userid"], job_id)
+        if not already_applied:
+            if st.button(
+                "🚀 Nộp CV",
+                type="primary",
+                use_container_width=True,
+                key=f"apply_now_{job_id}",
+            ):
+                st.session_state.apply_job_id = job_id
+                st.session_state.apply_job_title = job["title"]
+                go("candidate_apply")
+        else:
+            st.success("✓ Bạn đã ứng tuyển\ncông việc này", icon="✅")
 
 
 def page_candidate_profile():
@@ -1215,6 +1574,11 @@ elif page == "hr_jobs":
         page_hr_jobs()
     else:
         go("login_hr")
+elif page == "hr_job_view":
+    if st.session_state.hr_user:
+        page_hr_job_view()
+    else:
+        go("login_hr")
 elif page == "hr_job_edit":
     if st.session_state.hr_user:
         page_hr_job_edit()
@@ -1243,6 +1607,11 @@ elif page == "login_candidate":
 elif page == "candidate_jobs":
     if st.session_state.candidate_user:
         page_candidate_jobs()
+    else:
+        go("login_candidate")
+elif page == "candidate_job_detail":
+    if st.session_state.candidate_user:
+        page_candidate_job_detail()
     else:
         go("login_candidate")
 elif page == "candidate_profile":
