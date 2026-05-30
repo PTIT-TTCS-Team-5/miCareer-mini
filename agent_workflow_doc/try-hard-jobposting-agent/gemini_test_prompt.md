@@ -297,3 +297,5 @@ Sau khi hoàn thành Phase 1-3:
 - **Tool expanders**: Streamlit render `<details>/<summary>` — dùng `locator("details summary:has-text('Bước')")`.
 - **Quick prompts**: text bị cắt ở 55 ký tự trong button label — dùng `button:has-text('Liệt kê top')` thay vì full text.
 - **Postman MCP**: nếu cần tạo request mới trong collection, dùng `createCollectionRequest`. Nếu chỉ cần test API trực tiếp, dùng `evaluate_script` hoặc `fetch` trong Chrome devtools.
+- Nếu cần debug: chỉ sửa front-end (miCareer-mini có miCareer-mini\.understand-anything\knowledge-graph.json)
+- Nếu phải sửa backend: Có thể sửa nhưng phải viết report đầy đủ (FANG cũng có FANG\.understand-anything\knowledge-graph.json)
