@@ -266,3 +266,34 @@ def get_candidate_bio_and_cv(candidate_id: int) -> dict | None:
                 (candidate_id,),
             )
             return cur.fetchone()
+
+
+# ---------------------------------------------------------------------------
+# C3: JobPosting Agent helpers
+# ---------------------------------------------------------------------------
+
+
+def get_application_summaries_by_ids(job_app_ids: list[int]) -> list[dict]:
+    """Lấy name + status của nhiều jobApp theo danh sách ID.
+
+    Read-only. Dùng để hiển thị tên/trạng thái trên working-set chips
+    thay vì chỉ hiện ID thô.
+
+    Returns:
+        List of {jobappid, fname, lname, email, stat} — chỉ trả về IDs có trong DB.
+    """
+    if not job_app_ids:
+        return []
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT ja.jobappid, u.fname, u.lname, u.email, ja.stat
+                FROM jobapplication ja
+                JOIN "user" u ON ja.candidateid = u.userid
+                WHERE ja.jobappid = ANY(%s)
+                ORDER BY ja.jobappid
+            """,
+                (list(job_app_ids),),
+            )
+            return cur.fetchall()

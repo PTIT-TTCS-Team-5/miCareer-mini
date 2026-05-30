@@ -1,0 +1,768 @@
+{
+  "version": "1.0.0",
+  "gitCommitHash": "76bb27e7b53472efff192df8be7e2d80c0b8dded",
+  "generatedAt": "2026-05-27T06:33:07.845Z",
+  "files": {
+    "app.py": {
+      "filePath": "app.py",
+      "contentHash": "8cf104a8daff64173f084c4ebe2b6d147bc16755070e7f8e3f34a47aee667754",
+      "functions": [
+        {
+          "name": "_ensure_master_data",
+          "params": [],
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "go",
+          "params": [
+            "page"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "page_home",
+          "params": [],
+          "exported": true,
+          "lineCount": 20
+        },
+        {
+          "name": "page_login_hr",
+          "params": [],
+          "exported": true,
+          "lineCount": 17
+        },
+        {
+          "name": "page_hr_jobs",
+          "params": [],
+          "exported": true,
+          "lineCount": 37
+        },
+        {
+          "name": "page_hr_job_view",
+          "params": [],
+          "exported": true,
+          "lineCount": 52
+        },
+        {
+          "name": "page_hr_job_edit",
+          "params": [],
+          "exported": true,
+          "lineCount": 249
+        },
+        {
+          "name": "_render_score_badge",
+          "params": [
+            "item"
+          ],
+          "exported": true,
+          "lineCount": 22
+        },
+        {
+          "name": "_render_hr_ranking_tab",
+          "params": [
+            "job_id"
+          ],
+          "exported": true,
+          "lineCount": 158
+        },
+        {
+          "name": "page_hr_ai_ranking",
+          "params": [],
+          "exported": true,
+          "lineCount": 16
+        },
+        {
+          "name": "page_hr_applications",
+          "params": [],
+          "exported": true,
+          "lineCount": 193
+        },
+        {
+          "name": "page_hr_app_detail",
+          "params": [],
+          "exported": true,
+          "lineCount": 179
+        },
+        {
+          "name": "page_login_candidate",
+          "params": [],
+          "exported": true,
+          "lineCount": 17
+        },
+        {
+          "name": "page_candidate_jobs",
+          "params": [],
+          "exported": true,
+          "lineCount": 79
+        },
+        {
+          "name": "_render_candidate_ai_jobs",
+          "params": [
+            "candidate_id",
+            "show_applied"
+          ],
+          "exported": true,
+          "lineCount": 134
+        },
+        {
+          "name": "page_candidate_job_detail",
+          "params": [],
+          "exported": true,
+          "lineCount": 51
+        },
+        {
+          "name": "page_candidate_profile",
+          "params": [],
+          "exported": true,
+          "lineCount": 82
+        },
+        {
+          "name": "page_candidate_apply",
+          "params": [],
+          "exported": true,
+          "lineCount": 106
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "streamlit",
+          "specifiers": [
+            "st"
+          ]
+        },
+        {
+          "source": "core",
+          "specifiers": [
+            "db",
+            "fang_client",
+            "nmaiex_client"
+          ]
+        },
+        {
+          "source": "core.cloudinary_upload",
+          "specifiers": [
+            "upload_cv_pdf"
+          ]
+        }
+      ],
+      "exports": [
+        "_ensure_master_data",
+        "go",
+        "page_home",
+        "page_login_hr",
+        "page_hr_jobs",
+        "page_hr_job_view",
+        "page_hr_job_edit",
+        "_render_score_badge",
+        "_render_hr_ranking_tab",
+        "page_hr_ai_ranking",
+        "page_hr_applications",
+        "page_hr_app_detail",
+        "page_login_candidate",
+        "page_candidate_jobs",
+        "_render_candidate_ai_jobs",
+        "page_candidate_job_detail",
+        "page_candidate_profile",
+        "page_candidate_apply"
+      ],
+      "totalLines": 1631,
+      "hasStructuralAnalysis": true
+    },
+    "core/cloudinary_upload.py": {
+      "filePath": "core/cloudinary_upload.py",
+      "contentHash": "a27ce0ab984d194d9a17ef7fb0e6e995beaf9b85888bdce7fe1b044c9f458603",
+      "functions": [
+        {
+          "name": "upload_cv_pdf",
+          "params": [
+            "file_bytes",
+            "filename"
+          ],
+          "returnType": "str",
+          "exported": true,
+          "lineCount": 38
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "cloudinary",
+          "specifiers": [
+            "cloudinary"
+          ]
+        },
+        {
+          "source": "cloudinary.uploader",
+          "specifiers": [
+            "cloudinary.uploader"
+          ]
+        },
+        {
+          "source": "dotenv",
+          "specifiers": [
+            "load_dotenv"
+          ]
+        }
+      ],
+      "exports": [
+        "upload_cv_pdf"
+      ],
+      "totalLines": 72,
+      "hasStructuralAnalysis": true
+    },
+    "core/db.py": {
+      "filePath": "core/db.py",
+      "contentHash": "cb3372d3cbae8cac0236198d0e86d7091f0cc2007511eeb4c8edd43fbc9dbbec",
+      "functions": [
+        {
+          "name": "get_connection",
+          "params": [],
+          "exported": true,
+          "lineCount": 2
+        },
+        {
+          "name": "get_hr_user",
+          "params": [
+            "username",
+            "password"
+          ],
+          "exported": true,
+          "lineCount": 18
+        },
+        {
+          "name": "get_job_postings_by_company",
+          "params": [
+            "comp_id"
+          ],
+          "exported": true,
+          "lineCount": 14
+        },
+        {
+          "name": "get_applications_for_job",
+          "params": [
+            "job_post_id"
+          ],
+          "exported": true,
+          "lineCount": 17
+        },
+        {
+          "name": "get_application_detail",
+          "params": [
+            "job_app_id"
+          ],
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "get_application_by_job_and_candidate",
+          "params": [
+            "job_post_id",
+            "candidate_id"
+          ],
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "get_ingestion_job_for_app",
+          "params": [
+            "job_app_id"
+          ],
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "get_candidate_user",
+          "params": [
+            "username",
+            "password"
+          ],
+          "exported": true,
+          "lineCount": 19
+        },
+        {
+          "name": "get_all_job_postings",
+          "params": [],
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "get_job_posting_detail",
+          "params": [
+            "job_post_id"
+          ],
+          "exported": true,
+          "lineCount": 16
+        },
+        {
+          "name": "get_candidate_existing_cv",
+          "params": [
+            "candidate_id"
+          ],
+          "exported": true,
+          "lineCount": 17
+        },
+        {
+          "name": "has_applied",
+          "params": [
+            "candidate_id",
+            "job_post_id"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "create_application",
+          "params": [
+            "candidate_id",
+            "job_post_id",
+            "cv_snap_url"
+          ],
+          "returnType": "int",
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "update_candidate_cv_url",
+          "params": [
+            "candidate_id",
+            "cv_url"
+          ],
+          "returnType": "None",
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "get_candidate_bio_and_cv",
+          "params": [
+            "candidate_id"
+          ],
+          "returnType": "dict | None",
+          "exported": true,
+          "lineCount": 11
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "psycopg2",
+          "specifiers": [
+            "psycopg2"
+          ]
+        },
+        {
+          "source": "dotenv",
+          "specifiers": [
+            "load_dotenv"
+          ]
+        },
+        {
+          "source": "psycopg2.extras",
+          "specifiers": [
+            "RealDictCursor"
+          ]
+        }
+      ],
+      "exports": [
+        "get_connection",
+        "get_hr_user",
+        "get_job_postings_by_company",
+        "get_applications_for_job",
+        "get_application_detail",
+        "get_application_by_job_and_candidate",
+        "get_ingestion_job_for_app",
+        "get_candidate_user",
+        "get_all_job_postings",
+        "get_job_posting_detail",
+        "get_candidate_existing_cv",
+        "has_applied",
+        "create_application",
+        "update_candidate_cv_url",
+        "get_candidate_bio_and_cv"
+      ],
+      "totalLines": 269,
+      "hasStructuralAnalysis": true
+    },
+    "core/fang_client.py": {
+      "filePath": "core/fang_client.py",
+      "contentHash": "d53fd85b07b99622f73e46f8249503a0e38167a2d124d4e807d03a4e88e57b7e",
+      "functions": [
+        {
+          "name": "_post",
+          "params": [
+            "path",
+            "payload"
+          ],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "_get",
+          "params": [
+            "path",
+            "params"
+          ],
+          "returnType": "Any",
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "chat_query",
+          "params": [
+            "job_app_id",
+            "hr_id",
+            "prompt",
+            "model_mode",
+            "conversation_id"
+          ],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 22
+        },
+        {
+          "name": "list_conversations",
+          "params": [
+            "hr_id",
+            "job_app_id"
+          ],
+          "returnType": "list[dict]",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "get_conversation_messages",
+          "params": [
+            "conversation_id"
+          ],
+          "returnType": "list[dict]",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "summarize_conversation",
+          "params": [
+            "conversation_id"
+          ],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "branch_new_conversation",
+          "params": [
+            "conversation_id"
+          ],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "trigger_ingestion",
+          "params": [
+            "job_app_id",
+            "cv_snap_url"
+          ],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "get_ingestion_status",
+          "params": [
+            "job_id"
+          ],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "poll_ingestion_until_done",
+          "params": [
+            "job_id",
+            "interval_secs",
+            "timeout_secs"
+          ],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 22
+        },
+        {
+          "name": "health_check",
+          "params": [],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 7
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "time",
+          "specifiers": [
+            "time"
+          ]
+        },
+        {
+          "source": "typing",
+          "specifiers": [
+            "Any"
+          ]
+        },
+        {
+          "source": "requests",
+          "specifiers": [
+            "requests"
+          ]
+        },
+        {
+          "source": "dotenv",
+          "specifiers": [
+            "load_dotenv"
+          ]
+        }
+      ],
+      "exports": [
+        "_post",
+        "_get",
+        "chat_query",
+        "list_conversations",
+        "get_conversation_messages",
+        "summarize_conversation",
+        "branch_new_conversation",
+        "trigger_ingestion",
+        "get_ingestion_status",
+        "poll_ingestion_until_done",
+        "health_check"
+      ],
+      "totalLines": 154,
+      "hasStructuralAnalysis": true
+    },
+    "core/nmaiex_client.py": {
+      "filePath": "core/nmaiex_client.py",
+      "contentHash": "a3fca32cafecd5a3c0faf1eea795769ae10dccc144705d492991251b56db1355",
+      "functions": [
+        {
+          "name": "_get",
+          "params": [
+            "path",
+            "params"
+          ],
+          "returnType": "Any",
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "_patch",
+          "params": [
+            "path",
+            "payload"
+          ],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "get_provinces",
+          "params": [],
+          "returnType": "list[dict]",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "get_skills",
+          "params": [],
+          "returnType": "list[dict]",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "get_levels",
+          "params": [],
+          "returnType": "list[dict]",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "get_categories",
+          "params": [],
+          "returnType": "list[dict]",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "load_all_master_data",
+          "params": [],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 17
+        },
+        {
+          "name": "get_job_detail",
+          "params": [
+            "job_id"
+          ],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "update_job_content",
+          "params": [
+            "job_id",
+            "title",
+            "description"
+          ],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "update_job_structured",
+          "params": [
+            "job_id",
+            "prov_id",
+            "level_ids",
+            "cat_ids",
+            "skill_ids",
+            "custom_skill_texts",
+            "min_salary",
+            "max_salary",
+            "work_mode"
+          ],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 38
+        },
+        {
+          "name": "update_candidate",
+          "params": [
+            "candidate_id",
+            "bio",
+            "cv_url"
+          ],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 18
+        },
+        {
+          "name": "get_candidates_ranking",
+          "params": [
+            "job_id",
+            "params"
+          ],
+          "returnType": "list[dict]",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "get_jobs_ranking",
+          "params": [
+            "candidate_id",
+            "params"
+          ],
+          "returnType": "list[dict]",
+          "exported": true,
+          "lineCount": 7
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "typing",
+          "specifiers": [
+            "Any"
+          ]
+        },
+        {
+          "source": "requests",
+          "specifiers": [
+            "requests"
+          ]
+        },
+        {
+          "source": "dotenv",
+          "specifiers": [
+            "load_dotenv"
+          ]
+        }
+      ],
+      "exports": [
+        "_get",
+        "_patch",
+        "get_provinces",
+        "get_skills",
+        "get_levels",
+        "get_categories",
+        "load_all_master_data",
+        "get_job_detail",
+        "update_job_content",
+        "update_job_structured",
+        "update_candidate",
+        "get_candidates_ranking",
+        "get_jobs_ranking"
+      ],
+      "totalLines": 216,
+      "hasStructuralAnalysis": true
+    },
+    "test_playwright.py": {
+      "filePath": "test_playwright.py",
+      "contentHash": "0dfc95385516728c68d84b142b6c964e8d3c6b3f7f39041de8c56e943d77688e",
+      "functions": [
+        {
+          "name": "run_test",
+          "params": [],
+          "exported": true,
+          "lineCount": 49
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "playwright.sync_api",
+          "specifiers": [
+            "sync_playwright"
+          ]
+        }
+      ],
+      "exports": [
+        "run_test"
+      ],
+      "totalLines": 55,
+      "hasStructuralAnalysis": true
+    }
+  }
+}

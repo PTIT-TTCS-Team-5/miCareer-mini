@@ -38,6 +38,19 @@ def _get(path: str, params: dict | None = None) -> Any:
     return resp.json()
 
 
+def _patch(path: str, payload: dict, params: dict | None = None) -> dict:
+    url = f"{FANG_BASE_URL}{path}"
+    resp = requests.patch(url, json=payload, params=params, timeout=_TIMEOUT)
+    resp.raise_for_status()
+    return resp.json()
+
+
+def _delete(path: str, params: dict | None = None) -> None:
+    url = f"{FANG_BASE_URL}{path}"
+    resp = requests.delete(url, params=params, timeout=_TIMEOUT)
+    resp.raise_for_status()
+
+
 # ---------------------------------------------------------------------------
 # Chat API
 # ---------------------------------------------------------------------------
@@ -151,3 +164,92 @@ def health_check() -> bool:
         return resp.status_code == 200
     except Exception:
         return False
+
+
+# ---------------------------------------------------------------------------
+# JobPosting Agent API (C3)
+# ---------------------------------------------------------------------------
+
+
+def jobposting_agent_query(
+    job_post_id: int,
+    hr_id: int,
+    prompt: str,
+    conversation_id: str | None = None,
+) -> dict:
+    """Gửi prompt đến JobPosting Agent, nhận JSON response.
+
+    Returns:
+        dict với các key:
+            conversationId, messageId, response, model, stepsUsed,
+            toolCalls[], sourceJobAppIds[], workingSet, latencyMs, warnings[]
+    """
+    payload: dict[str, Any] = {
+        "jobPostId": job_post_id,
+        "hrId": hr_id,
+        "prompt": prompt,
+        "conversationId": conversation_id,
+    }
+    return _post("/agent/job-posting/query", payload)
+
+
+def list_jobposting_agent_conversations(
+    job_post_id: int,
+    hr_id: int,
+) -> list[dict]:
+    """Lấy danh sách conversations của HR cho 1 jobPost.
+
+    Returns:
+        List of {conversationId, title, lastMessageAt, messageCount}
+    """
+    return _get(
+        "/agent/job-posting/conversations",
+        params={"jobPostId": job_post_id, "hrId": hr_id},
+    )
+
+
+def get_jobposting_agent_messages(
+    conversation_id: str,
+    include_tool_messages: bool = True,
+    include_system: bool = False,
+) -> list[dict]:
+    """Lấy lịch sử messages của 1 JobPosting Agent conversation.
+
+    Returns:
+        List of {role, content, ...} — bao gồm tool_call/tool_result nếu include_tool_messages=True
+    """
+    return _get(
+        f"/agent/job-posting/conversations/{conversation_id}/messages",
+        params={
+            "includeToolMessages": str(include_tool_messages).lower(),
+            "includeSystem": str(include_system).lower(),
+        },
+    )
+
+
+def rename_jobposting_agent_conversation(
+    conversation_id: str,
+    hr_id: int,
+    title: str,
+) -> dict:
+    """Đổi tên 1 JobPosting Agent conversation.
+
+    Returns:
+        dict xác nhận update
+    """
+    return _patch(
+        f"/agent/job-posting/conversations/{conversation_id}",
+        payload={"title": title},
+        params={"hrId": hr_id},
+    )
+
+
+def archive_jobposting_agent_conversation(
+    conversation_id: str,
+    hr_id: int,
+) -> None:
+    """Lưu trữ (xoá mềm) 1 JobPosting Agent conversation. Returns 204."""
+    _delete(
+        f"/agent/job-posting/conversations/{conversation_id}",
+        params={"hrId": hr_id},
+    )

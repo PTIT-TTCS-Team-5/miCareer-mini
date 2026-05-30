@@ -1,0 +1,1969 @@
+{
+  "version": "1.0.0",
+  "project": {
+    "name": "miCareer-mini",
+    "languages": [
+      "python",
+      "markdown",
+      "yaml",
+      "toml",
+      "config"
+    ],
+    "frameworks": [
+      "Streamlit",
+      "Playwright"
+    ],
+    "description": "Thin Streamlit frontend for HR and candidate recruitment workflows that delegates AI-heavy processing, ranking, and chat behavior to FANG.",
+    "analyzedAt": "2026-05-27T06:32:07.715526+00:00",
+    "gitCommitHash": "76bb27e7b53472efff192df8be7e2d80c0b8dded"
+  },
+  "nodes": [
+    {
+      "id": "file:app.py",
+      "type": "file",
+      "name": "app.py",
+      "filePath": "app.py",
+      "summary": "Streamlit entrypoint that initializes session state, renders HR and candidate pages, and orchestrates calls to the database, FANG APIs, NMAIex APIs, and Cloudinary upload flow.",
+      "tags": [
+        "streamlit",
+        "ui",
+        "routing",
+        "hr-flow",
+        "candidate-flow"
+      ]
+    },
+    {
+      "id": "file:core/cloudinary_upload.py",
+      "type": "file",
+      "name": "cloudinary_upload.py",
+      "filePath": "core/cloudinary_upload.py",
+      "summary": "Uploads candidate CV PDFs to Cloudinary and returns the secure public URL used by local application records and FANG ingestion.",
+      "tags": [
+        "cloudinary",
+        "cv-upload",
+        "integration"
+      ]
+    },
+    {
+      "id": "file:core/db.py",
+      "type": "file",
+      "name": "db.py",
+      "filePath": "core/db.py",
+      "summary": "Relational data access layer for HR login, candidate login, job listings, applications, ingestion status lookups, and candidate profile reads and writes.",
+      "tags": [
+        "postgresql",
+        "database",
+        "queries",
+        "data-access"
+      ]
+    },
+    {
+      "id": "file:core/fang_client.py",
+      "type": "file",
+      "name": "fang_client.py",
+      "filePath": "core/fang_client.py",
+      "summary": "Thin HTTP client for FANG chat and ingestion endpoints, including conversation history, summarization, branching, ingestion polling, and health checks.",
+      "tags": [
+        "rest-client",
+        "fang",
+        "rag",
+        "ingestion"
+      ]
+    },
+    {
+      "id": "file:core/nmaiex_client.py",
+      "type": "file",
+      "name": "nmaiex_client.py",
+      "filePath": "core/nmaiex_client.py",
+      "summary": "Thin HTTP client for NMAIex master data, job editing, candidate profile sync, and ranking endpoints exposed through the FANG backend.",
+      "tags": [
+        "rest-client",
+        "nmaiex",
+        "ranking",
+        "master-data"
+      ]
+    },
+    {
+      "id": "file:test_playwright.py",
+      "type": "file",
+      "name": "test_playwright.py",
+      "filePath": "test_playwright.py",
+      "summary": "Manual Playwright smoke test that drives the local Streamlit UI through the HR login flow and verifies the expected landing state.",
+      "tags": [
+        "playwright",
+        "smoke-test",
+        "ui-test"
+      ]
+    },
+    {
+      "id": "config:.env.example",
+      "type": "config",
+      "name": ".env.example",
+      "filePath": ".env.example",
+      "summary": "Example environment configuration for FANG API connectivity and Cloudinary credentials required by the application.",
+      "tags": [
+        "environment",
+        "configuration",
+        "secrets-template"
+      ]
+    },
+    {
+      "id": "config:.gitleaks.toml",
+      "type": "config",
+      "name": ".gitleaks.toml",
+      "filePath": ".gitleaks.toml",
+      "summary": "Secret-scanning configuration for repository leak detection.",
+      "tags": [
+        "security",
+        "configuration",
+        "secret-scanning"
+      ]
+    },
+    {
+      "id": "config:.pre-commit-config.yaml",
+      "type": "config",
+      "name": ".pre-commit-config.yaml",
+      "filePath": ".pre-commit-config.yaml",
+      "summary": "Pre-commit hook configuration used to enforce repository quality checks before changes are committed.",
+      "tags": [
+        "tooling",
+        "quality",
+        "automation"
+      ]
+    },
+    {
+      "id": "config:.understand-anything/.understandignore",
+      "type": "config",
+      "name": ".understandignore",
+      "filePath": ".understand-anything/.understandignore",
+      "summary": "Analysis ignore configuration that scopes what the understand-anything graph builder includes or excludes.",
+      "tags": [
+        "analysis",
+        "tooling",
+        "configuration"
+      ]
+    },
+    {
+      "id": "config:requirements.txt",
+      "type": "config",
+      "name": "requirements.txt",
+      "filePath": "requirements.txt",
+      "summary": "Python dependency manifest for the Streamlit app, database driver, HTTP clients, Cloudinary support, and local tooling.",
+      "tags": [
+        "python",
+        "dependencies",
+        "configuration"
+      ]
+    },
+    {
+      "id": "document:README.md",
+      "type": "document",
+      "name": "README.md",
+      "filePath": "README.md",
+      "summary": "Primary project overview describing miCareer-mini as a Streamlit frontend that delegates AI-heavy behavior to FANG and supports HR and candidate flows.",
+      "tags": [
+        "overview",
+        "documentation",
+        "onboarding"
+      ]
+    },
+    {
+      "id": "document:agent_workflow_doc/implementation_plan.md",
+      "type": "document",
+      "name": "implementation_plan.md",
+      "filePath": "agent_workflow_doc/implementation_plan.md",
+      "summary": "Architecture and delivery plan that explains the intended split of responsibilities between FANG and miCareer-mini across chat, ranking, and candidate apply flows.",
+      "tags": [
+        "architecture",
+        "planning",
+        "integration"
+      ]
+    },
+    {
+      "id": "document:docs/archive/hr_guide_v1.md",
+      "type": "document",
+      "name": "hr_guide_v1.md",
+      "filePath": "docs/archive/hr_guide_v1.md",
+      "summary": "Archived HR usage guide for an older UI flow retained as historical reference.",
+      "tags": [
+        "archive",
+        "hr",
+        "documentation"
+      ]
+    },
+    {
+      "id": "document:docs/archive/rag_strategy_v1.md",
+      "type": "document",
+      "name": "rag_strategy_v1.md",
+      "filePath": "docs/archive/rag_strategy_v1.md",
+      "summary": "Archived RAG strategy notes that capture a previous architecture before the current FANG-centric approach.",
+      "tags": [
+        "archive",
+        "rag",
+        "strategy"
+      ]
+    },
+    {
+      "id": "document:docs/candidate_apply_guide.md",
+      "type": "document",
+      "name": "candidate_apply_guide.md",
+      "filePath": "docs/candidate_apply_guide.md",
+      "summary": "Operational guide for the candidate apply flow, including setup, end-to-end flow, test scenarios, and troubleshooting.",
+      "tags": [
+        "candidate-flow",
+        "operations",
+        "documentation"
+      ]
+    },
+    {
+      "id": "document:docs/candidate_apply_strategy.md",
+      "type": "document",
+      "name": "candidate_apply_strategy.md",
+      "filePath": "docs/candidate_apply_strategy.md",
+      "summary": "Detailed architecture strategy for candidate login, job browsing, CV upload, application creation, and FANG ingestion polling.",
+      "tags": [
+        "candidate-flow",
+        "architecture",
+        "strategy"
+      ]
+    },
+    {
+      "id": "function:app.py:_ensure_master_data",
+      "type": "function",
+      "name": "_ensure_master_data",
+      "filePath": "app.py",
+      "summary": "Load master data một lần rồi cache vào session_state.",
+      "tags": [
+        "session-cache",
+        "streamlit"
+      ]
+    },
+    {
+      "id": "function:app.py:go",
+      "type": "function",
+      "name": "go",
+      "filePath": "app.py",
+      "summary": "Update the current Streamlit page and trigger a rerun.",
+      "tags": [
+        "navigation",
+        "streamlit"
+      ]
+    },
+    {
+      "id": "function:app.py:page_home",
+      "type": "function",
+      "name": "page_home",
+      "filePath": "app.py",
+      "summary": "Render the Streamlit page for home.",
+      "tags": [
+        "streamlit"
+      ]
+    },
+    {
+      "id": "function:app.py:page_login_hr",
+      "type": "function",
+      "name": "page_login_hr",
+      "filePath": "app.py",
+      "summary": "Render the Streamlit page for login hr.",
+      "tags": [
+        "authentication",
+        "hr-flow",
+        "streamlit"
+      ]
+    },
+    {
+      "id": "function:app.py:page_hr_jobs",
+      "type": "function",
+      "name": "page_hr_jobs",
+      "filePath": "app.py",
+      "summary": "Render the Streamlit page for hr jobs.",
+      "tags": [
+        "hr-flow",
+        "streamlit"
+      ]
+    },
+    {
+      "id": "function:app.py:page_hr_job_view",
+      "type": "function",
+      "name": "page_hr_job_view",
+      "filePath": "app.py",
+      "summary": "Trang xem chi tiết job của HR.",
+      "tags": [
+        "hr-flow",
+        "streamlit"
+      ]
+    },
+    {
+      "id": "function:app.py:page_hr_job_edit",
+      "type": "function",
+      "name": "page_hr_job_edit",
+      "filePath": "app.py",
+      "summary": "Phase 1.5 — Form sửa Job Posting với 2 nút Save tách biệt.",
+      "tags": [
+        "hr-flow",
+        "streamlit"
+      ]
+    },
+    {
+      "id": "function:app.py:_render_score_badge",
+      "type": "function",
+      "name": "_render_score_badge",
+      "filePath": "app.py",
+      "summary": "Dev Mode: hiển thị score_breakdown chi tiết bên dưới mỗi card kết quả ranking.",
+      "tags": [
+        "streamlit"
+      ]
+    },
+    {
+      "id": "function:app.py:_render_hr_ranking_tab",
+      "type": "function",
+      "name": "_render_hr_ranking_tab",
+      "filePath": "app.py",
+      "summary": "Nội dung tab AI Ranking trong trang Danh sách Ứng viên (Phase 3).",
+      "tags": [
+        "hr-flow",
+        "ranking",
+        "streamlit"
+      ]
+    },
+    {
+      "id": "function:app.py:page_hr_ai_ranking",
+      "type": "function",
+      "name": "page_hr_ai_ranking",
+      "filePath": "app.py",
+      "summary": "Phase 3 — Trang AI Ranking riêng (truy cập từ nút trong danh sách Job).",
+      "tags": [
+        "hr-flow",
+        "ranking",
+        "streamlit"
+      ]
+    },
+    {
+      "id": "function:app.py:page_hr_applications",
+      "type": "function",
+      "name": "page_hr_applications",
+      "filePath": "app.py",
+      "summary": "Render the Streamlit page for hr applications.",
+      "tags": [
+        "hr-flow",
+        "streamlit"
+      ]
+    },
+    {
+      "id": "function:app.py:page_hr_app_detail",
+      "type": "function",
+      "name": "page_hr_app_detail",
+      "filePath": "app.py",
+      "summary": "Render the Streamlit page for hr app detail.",
+      "tags": [
+        "hr-flow",
+        "streamlit"
+      ]
+    },
+    {
+      "id": "function:app.py:page_login_candidate",
+      "type": "function",
+      "name": "page_login_candidate",
+      "filePath": "app.py",
+      "summary": "Render the Streamlit page for login candidate.",
+      "tags": [
+        "authentication",
+        "candidate-flow",
+        "streamlit"
+      ]
+    },
+    {
+      "id": "function:app.py:page_candidate_jobs",
+      "type": "function",
+      "name": "page_candidate_jobs",
+      "filePath": "app.py",
+      "summary": "Render the Streamlit page for candidate jobs.",
+      "tags": [
+        "candidate-flow",
+        "streamlit"
+      ]
+    },
+    {
+      "id": "function:app.py:_render_candidate_ai_jobs",
+      "type": "function",
+      "name": "_render_candidate_ai_jobs",
+      "filePath": "app.py",
+      "summary": "Phase 3 — Section gợi ý công việc phù hợp cho ứng viên (C→J ranking).",
+      "tags": [
+        "candidate-flow",
+        "streamlit"
+      ]
+    },
+    {
+      "id": "function:app.py:page_candidate_job_detail",
+      "type": "function",
+      "name": "page_candidate_job_detail",
+      "filePath": "app.py",
+      "summary": "Trang xem chi tiết job của ứng viên.",
+      "tags": [
+        "candidate-flow",
+        "streamlit"
+      ]
+    },
+    {
+      "id": "function:app.py:page_candidate_profile",
+      "type": "function",
+      "name": "page_candidate_profile",
+      "filePath": "app.py",
+      "summary": "Phase 1.5 — Trang hồ sơ của ứng viên: xem/sửa bio + upload CV mới.",
+      "tags": [
+        "candidate-flow",
+        "profile",
+        "streamlit"
+      ]
+    },
+    {
+      "id": "function:app.py:page_candidate_apply",
+      "type": "function",
+      "name": "page_candidate_apply",
+      "filePath": "app.py",
+      "summary": "Render the Streamlit page for candidate apply.",
+      "tags": [
+        "apply-flow",
+        "candidate-flow",
+        "streamlit"
+      ]
+    },
+    {
+      "id": "function:core/cloudinary_upload.py:upload_cv_pdf",
+      "type": "function",
+      "name": "upload_cv_pdf",
+      "filePath": "core/cloudinary_upload.py",
+      "summary": "Upload file PDF lên Cloudinary.",
+      "tags": [
+        "cloudinary",
+        "upload"
+      ]
+    },
+    {
+      "id": "function:core/db.py:get_connection",
+      "type": "function",
+      "name": "get_connection",
+      "filePath": "core/db.py",
+      "summary": "Top-level function `get_connection` defined in `core/db.py`.",
+      "tags": [
+        "database",
+        "postgresql"
+      ]
+    },
+    {
+      "id": "function:core/db.py:get_hr_user",
+      "type": "function",
+      "name": "get_hr_user",
+      "filePath": "core/db.py",
+      "summary": "Đăng nhập HR — trả về dict user hoặc None.",
+      "tags": [
+        "database",
+        "postgresql"
+      ]
+    },
+    {
+      "id": "function:core/db.py:get_job_postings_by_company",
+      "type": "function",
+      "name": "get_job_postings_by_company",
+      "filePath": "core/db.py",
+      "summary": "Lấy danh sách jobs của công ty HR.",
+      "tags": [
+        "database",
+        "postgresql"
+      ]
+    },
+    {
+      "id": "function:core/db.py:get_applications_for_job",
+      "type": "function",
+      "name": "get_applications_for_job",
+      "filePath": "core/db.py",
+      "summary": "Lấy danh sách ứng viên apply cho job.",
+      "tags": [
+        "database",
+        "postgresql"
+      ]
+    },
+    {
+      "id": "function:core/db.py:get_application_detail",
+      "type": "function",
+      "name": "get_application_detail",
+      "filePath": "core/db.py",
+      "summary": "Lấy chi tiết 1 ứng viên kèm cvsnapurl.",
+      "tags": [
+        "database",
+        "postgresql"
+      ]
+    },
+    {
+      "id": "function:core/db.py:get_application_by_job_and_candidate",
+      "type": "function",
+      "name": "get_application_by_job_and_candidate",
+      "filePath": "core/db.py",
+      "summary": "Lấy application khi biết job và candidate ID.",
+      "tags": [
+        "database",
+        "postgresql"
+      ]
+    },
+    {
+      "id": "function:core/db.py:get_ingestion_job_for_app",
+      "type": "function",
+      "name": "get_ingestion_job_for_app",
+      "filePath": "core/db.py",
+      "summary": "Lấy AIINDEXJOB mới nhất cho 1 jobApp (dùng ở HR để check status).",
+      "tags": [
+        "database",
+        "postgresql"
+      ]
+    },
+    {
+      "id": "function:core/db.py:get_candidate_user",
+      "type": "function",
+      "name": "get_candidate_user",
+      "filePath": "core/db.py",
+      "summary": "Đăng nhập Candidate — trả về dict user hoặc None.",
+      "tags": [
+        "database",
+        "postgresql"
+      ]
+    },
+    {
+      "id": "function:core/db.py:get_all_job_postings",
+      "type": "function",
+      "name": "get_all_job_postings",
+      "filePath": "core/db.py",
+      "summary": "Lấy tất cả job đang tuyển (public listing cho candidate).",
+      "tags": [
+        "database",
+        "postgresql"
+      ]
+    },
+    {
+      "id": "function:core/db.py:get_job_posting_detail",
+      "type": "function",
+      "name": "get_job_posting_detail",
+      "filePath": "core/db.py",
+      "summary": "Lấy chi tiết đầy đủ 1 job posting.",
+      "tags": [
+        "database",
+        "postgresql"
+      ]
+    },
+    {
+      "id": "function:core/db.py:get_candidate_existing_cv",
+      "type": "function",
+      "name": "get_candidate_existing_cv",
+      "filePath": "core/db.py",
+      "summary": "Lấy cvsnapurl từ application gần nhất của candidate (nếu có).",
+      "tags": [
+        "database",
+        "postgresql"
+      ]
+    },
+    {
+      "id": "function:core/db.py:has_applied",
+      "type": "function",
+      "name": "has_applied",
+      "filePath": "core/db.py",
+      "summary": "Kiểm tra candidate đã apply job này chưa.",
+      "tags": [
+        "database",
+        "postgresql"
+      ]
+    },
+    {
+      "id": "function:core/db.py:create_application",
+      "type": "function",
+      "name": "create_application",
+      "filePath": "core/db.py",
+      "summary": "Tạo JOBAPPLICATION mới, trả về jobAppId.",
+      "tags": [
+        "database",
+        "postgresql"
+      ]
+    },
+    {
+      "id": "function:core/db.py:update_candidate_cv_url",
+      "type": "function",
+      "name": "update_candidate_cv_url",
+      "filePath": "core/db.py",
+      "summary": "Cập nhật cvurl trong bảng candidate (CV gốc của ứng viên).",
+      "tags": [
+        "database",
+        "postgresql"
+      ]
+    },
+    {
+      "id": "function:core/db.py:get_candidate_bio_and_cv",
+      "type": "function",
+      "name": "get_candidate_bio_and_cv",
+      "filePath": "core/db.py",
+      "summary": "Lấy bio và cvurl hiện tại của candidate.",
+      "tags": [
+        "database",
+        "postgresql"
+      ]
+    },
+    {
+      "id": "function:core/fang_client.py:_post",
+      "type": "function",
+      "name": "_post",
+      "filePath": "core/fang_client.py",
+      "summary": "Top-level function `_post` defined in `core/fang_client.py`.",
+      "tags": [
+        "fang",
+        "rest-client"
+      ]
+    },
+    {
+      "id": "function:core/fang_client.py:_get",
+      "type": "function",
+      "name": "_get",
+      "filePath": "core/fang_client.py",
+      "summary": "Top-level function `_get` defined in `core/fang_client.py`.",
+      "tags": [
+        "fang",
+        "rest-client"
+      ]
+    },
+    {
+      "id": "function:core/fang_client.py:chat_query",
+      "type": "function",
+      "name": "chat_query",
+      "filePath": "core/fang_client.py",
+      "summary": "Gửi prompt đến FANG, nhận JSON response.",
+      "tags": [
+        "fang",
+        "rest-client"
+      ]
+    },
+    {
+      "id": "function:core/fang_client.py:list_conversations",
+      "type": "function",
+      "name": "list_conversations",
+      "filePath": "core/fang_client.py",
+      "summary": "Lấy danh sách conversations của HR cho 1 jobApp.",
+      "tags": [
+        "fang",
+        "rest-client"
+      ]
+    },
+    {
+      "id": "function:core/fang_client.py:get_conversation_messages",
+      "type": "function",
+      "name": "get_conversation_messages",
+      "filePath": "core/fang_client.py",
+      "summary": "Lấy lịch sử messages của 1 conversation (loại trừ system messages).",
+      "tags": [
+        "fang",
+        "rest-client"
+      ]
+    },
+    {
+      "id": "function:core/fang_client.py:summarize_conversation",
+      "type": "function",
+      "name": "summarize_conversation",
+      "filePath": "core/fang_client.py",
+      "summary": "Gọi FANG tóm tắt hội thoại (Summarize & Continue).",
+      "tags": [
+        "fang",
+        "rest-client"
+      ]
+    },
+    {
+      "id": "function:core/fang_client.py:branch_new_conversation",
+      "type": "function",
+      "name": "branch_new_conversation",
+      "filePath": "core/fang_client.py",
+      "summary": "Gọi FANG tạo hội thoại mới từ summary hội thoại cũ.",
+      "tags": [
+        "fang",
+        "rest-client"
+      ]
+    },
+    {
+      "id": "function:core/fang_client.py:trigger_ingestion",
+      "type": "function",
+      "name": "trigger_ingestion",
+      "filePath": "core/fang_client.py",
+      "summary": "Kích hoạt pipeline parse → chunk → embed CV trên FANG.",
+      "tags": [
+        "fang",
+        "rest-client"
+      ]
+    },
+    {
+      "id": "function:core/fang_client.py:get_ingestion_status",
+      "type": "function",
+      "name": "get_ingestion_status",
+      "filePath": "core/fang_client.py",
+      "summary": "Kiểm tra trạng thái ingestion job.",
+      "tags": [
+        "fang",
+        "rest-client"
+      ]
+    },
+    {
+      "id": "function:core/fang_client.py:poll_ingestion_until_done",
+      "type": "function",
+      "name": "poll_ingestion_until_done",
+      "filePath": "core/fang_client.py",
+      "summary": "Polling trạng thái ingestion cho đến khi hoàn thành hoặc timeout.",
+      "tags": [
+        "fang",
+        "rest-client"
+      ]
+    },
+    {
+      "id": "function:core/fang_client.py:health_check",
+      "type": "function",
+      "name": "health_check",
+      "filePath": "core/fang_client.py",
+      "summary": "Kiểm tra FANG API có đang chạy không.",
+      "tags": [
+        "fang",
+        "rest-client"
+      ]
+    },
+    {
+      "id": "function:core/nmaiex_client.py:_get",
+      "type": "function",
+      "name": "_get",
+      "filePath": "core/nmaiex_client.py",
+      "summary": "Top-level function `_get` defined in `core/nmaiex_client.py`.",
+      "tags": [
+        "nmaiex",
+        "rest-client"
+      ]
+    },
+    {
+      "id": "function:core/nmaiex_client.py:_patch",
+      "type": "function",
+      "name": "_patch",
+      "filePath": "core/nmaiex_client.py",
+      "summary": "Top-level function `_patch` defined in `core/nmaiex_client.py`.",
+      "tags": [
+        "nmaiex",
+        "rest-client"
+      ]
+    },
+    {
+      "id": "function:core/nmaiex_client.py:get_provinces",
+      "type": "function",
+      "name": "get_provinces",
+      "filePath": "core/nmaiex_client.py",
+      "summary": "Lấy danh sách tỉnh/thành theo vùng.",
+      "tags": [
+        "nmaiex",
+        "rest-client"
+      ]
+    },
+    {
+      "id": "function:core/nmaiex_client.py:get_skills",
+      "type": "function",
+      "name": "get_skills",
+      "filePath": "core/nmaiex_client.py",
+      "summary": "Lấy danh sách skills trong catalog.",
+      "tags": [
+        "nmaiex",
+        "rest-client"
+      ]
+    },
+    {
+      "id": "function:core/nmaiex_client.py:get_levels",
+      "type": "function",
+      "name": "get_levels",
+      "filePath": "core/nmaiex_client.py",
+      "summary": "Lấy danh sách cấp bậc công việc.",
+      "tags": [
+        "nmaiex",
+        "rest-client"
+      ]
+    },
+    {
+      "id": "function:core/nmaiex_client.py:get_categories",
+      "type": "function",
+      "name": "get_categories",
+      "filePath": "core/nmaiex_client.py",
+      "summary": "Lấy danh sách danh mục nghề nghiệp.",
+      "tags": [
+        "nmaiex",
+        "rest-client"
+      ]
+    },
+    {
+      "id": "function:core/nmaiex_client.py:load_all_master_data",
+      "type": "function",
+      "name": "load_all_master_data",
+      "filePath": "core/nmaiex_client.py",
+      "summary": "Load toàn bộ master data trong 1 lần gọi (dùng để cache vào session_state).",
+      "tags": [
+        "nmaiex",
+        "rest-client"
+      ]
+    },
+    {
+      "id": "function:core/nmaiex_client.py:get_job_detail",
+      "type": "function",
+      "name": "get_job_detail",
+      "filePath": "core/nmaiex_client.py",
+      "summary": "Lấy chi tiết job posting kèm structured data (provId, levels, categories, skills).",
+      "tags": [
+        "nmaiex",
+        "rest-client"
+      ]
+    },
+    {
+      "id": "function:core/nmaiex_client.py:update_job_content",
+      "type": "function",
+      "name": "update_job_content",
+      "filePath": "core/nmaiex_client.py",
+      "summary": "Cập nhật nội dung text của job (title, description).",
+      "tags": [
+        "nmaiex",
+        "rest-client"
+      ]
+    },
+    {
+      "id": "function:core/nmaiex_client.py:update_job_structured",
+      "type": "function",
+      "name": "update_job_structured",
+      "filePath": "core/nmaiex_client.py",
+      "summary": "Cập nhật metadata cấu trúc của job (không trigger re-embed).",
+      "tags": [
+        "nmaiex",
+        "rest-client"
+      ]
+    },
+    {
+      "id": "function:core/nmaiex_client.py:update_candidate",
+      "type": "function",
+      "name": "update_candidate",
+      "filePath": "core/nmaiex_client.py",
+      "summary": "Cập nhật thông tin candidate (bio, cvUrl).",
+      "tags": [
+        "nmaiex",
+        "rest-client"
+      ]
+    },
+    {
+      "id": "function:core/nmaiex_client.py:get_candidates_ranking",
+      "type": "function",
+      "name": "get_candidates_ranking",
+      "filePath": "core/nmaiex_client.py",
+      "summary": "Lấy danh sách ứng viên được xếp hạng cho 1 Job.",
+      "tags": [
+        "nmaiex",
+        "rest-client"
+      ]
+    },
+    {
+      "id": "function:core/nmaiex_client.py:get_jobs_ranking",
+      "type": "function",
+      "name": "get_jobs_ranking",
+      "filePath": "core/nmaiex_client.py",
+      "summary": "Lấy danh sách công việc phù hợp cho 1 Ứng viên.",
+      "tags": [
+        "nmaiex",
+        "rest-client"
+      ]
+    },
+    {
+      "id": "function:test_playwright.py:run_test",
+      "type": "function",
+      "name": "run_test",
+      "filePath": "test_playwright.py",
+      "summary": "Run a local Playwright smoke test against the Streamlit HR login flow.",
+      "tags": [
+        "playwright",
+        "test"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:_ensure_master_data",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:go",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:page_home",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:page_login_hr",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:page_hr_jobs",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:page_hr_job_view",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:page_hr_job_edit",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:_render_score_badge",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:_render_hr_ranking_tab",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:page_hr_ai_ranking",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:page_hr_applications",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:page_hr_app_detail",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:page_login_candidate",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:page_candidate_jobs",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:_render_candidate_ai_jobs",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:page_candidate_job_detail",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:page_candidate_profile",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:page_candidate_apply",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/cloudinary_upload.py",
+      "target": "function:core/cloudinary_upload.py:upload_cv_pdf",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/db.py",
+      "target": "function:core/db.py:get_connection",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/db.py",
+      "target": "function:core/db.py:get_hr_user",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/db.py",
+      "target": "function:core/db.py:get_job_postings_by_company",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/db.py",
+      "target": "function:core/db.py:get_applications_for_job",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/db.py",
+      "target": "function:core/db.py:get_application_detail",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/db.py",
+      "target": "function:core/db.py:get_application_by_job_and_candidate",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/db.py",
+      "target": "function:core/db.py:get_ingestion_job_for_app",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/db.py",
+      "target": "function:core/db.py:get_candidate_user",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/db.py",
+      "target": "function:core/db.py:get_all_job_postings",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/db.py",
+      "target": "function:core/db.py:get_job_posting_detail",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/db.py",
+      "target": "function:core/db.py:get_candidate_existing_cv",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/db.py",
+      "target": "function:core/db.py:has_applied",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/db.py",
+      "target": "function:core/db.py:create_application",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/db.py",
+      "target": "function:core/db.py:update_candidate_cv_url",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/db.py",
+      "target": "function:core/db.py:get_candidate_bio_and_cv",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/fang_client.py",
+      "target": "function:core/fang_client.py:_post",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/fang_client.py",
+      "target": "function:core/fang_client.py:_get",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/fang_client.py",
+      "target": "function:core/fang_client.py:chat_query",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/fang_client.py",
+      "target": "function:core/fang_client.py:list_conversations",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/fang_client.py",
+      "target": "function:core/fang_client.py:get_conversation_messages",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/fang_client.py",
+      "target": "function:core/fang_client.py:summarize_conversation",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/fang_client.py",
+      "target": "function:core/fang_client.py:branch_new_conversation",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/fang_client.py",
+      "target": "function:core/fang_client.py:trigger_ingestion",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/fang_client.py",
+      "target": "function:core/fang_client.py:get_ingestion_status",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/fang_client.py",
+      "target": "function:core/fang_client.py:poll_ingestion_until_done",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/fang_client.py",
+      "target": "function:core/fang_client.py:health_check",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/nmaiex_client.py",
+      "target": "function:core/nmaiex_client.py:_get",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/nmaiex_client.py",
+      "target": "function:core/nmaiex_client.py:_patch",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/nmaiex_client.py",
+      "target": "function:core/nmaiex_client.py:get_provinces",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/nmaiex_client.py",
+      "target": "function:core/nmaiex_client.py:get_skills",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/nmaiex_client.py",
+      "target": "function:core/nmaiex_client.py:get_levels",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/nmaiex_client.py",
+      "target": "function:core/nmaiex_client.py:get_categories",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/nmaiex_client.py",
+      "target": "function:core/nmaiex_client.py:load_all_master_data",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/nmaiex_client.py",
+      "target": "function:core/nmaiex_client.py:get_job_detail",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/nmaiex_client.py",
+      "target": "function:core/nmaiex_client.py:update_job_content",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/nmaiex_client.py",
+      "target": "function:core/nmaiex_client.py:update_job_structured",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/nmaiex_client.py",
+      "target": "function:core/nmaiex_client.py:update_candidate",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/nmaiex_client.py",
+      "target": "function:core/nmaiex_client.py:get_candidates_ranking",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:core/nmaiex_client.py",
+      "target": "function:core/nmaiex_client.py:get_jobs_ranking",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "file:test_playwright.py",
+      "target": "function:test_playwright.py:run_test",
+      "type": "contains",
+      "weight": 1.0
+    },
+    {
+      "source": "function:app.py:_render_candidate_ai_jobs",
+      "target": "function:app.py:_ensure_master_data",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:_render_candidate_ai_jobs",
+      "target": "function:app.py:_render_score_badge",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:_render_candidate_ai_jobs",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:_render_hr_ranking_tab",
+      "target": "function:app.py:_ensure_master_data",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:_render_hr_ranking_tab",
+      "target": "function:app.py:_render_score_badge",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:_render_hr_ranking_tab",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_candidate_apply",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_candidate_apply",
+      "target": "function:core/cloudinary_upload.py:upload_cv_pdf",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_candidate_job_detail",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_candidate_jobs",
+      "target": "function:app.py:_ensure_master_data",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_candidate_jobs",
+      "target": "function:app.py:_render_candidate_ai_jobs",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_candidate_jobs",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_candidate_profile",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_candidate_profile",
+      "target": "function:core/cloudinary_upload.py:upload_cv_pdf",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_home",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_hr_ai_ranking",
+      "target": "function:app.py:_render_hr_ranking_tab",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_hr_ai_ranking",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_hr_app_detail",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_hr_applications",
+      "target": "function:app.py:_ensure_master_data",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_hr_applications",
+      "target": "function:app.py:_render_score_badge",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_hr_applications",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_hr_job_edit",
+      "target": "function:app.py:_ensure_master_data",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_hr_job_edit",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_hr_job_view",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_hr_jobs",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_login_candidate",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_login_hr",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/db.py:create_application",
+      "target": "function:core/db.py:get_connection",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/db.py:get_all_job_postings",
+      "target": "function:core/db.py:get_connection",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/db.py:get_application_by_job_and_candidate",
+      "target": "function:core/db.py:get_connection",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/db.py:get_application_detail",
+      "target": "function:core/db.py:get_connection",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/db.py:get_applications_for_job",
+      "target": "function:core/db.py:get_connection",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/db.py:get_candidate_bio_and_cv",
+      "target": "function:core/db.py:get_connection",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/db.py:get_candidate_existing_cv",
+      "target": "function:core/db.py:get_connection",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/db.py:get_candidate_user",
+      "target": "function:core/db.py:get_connection",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/db.py:get_hr_user",
+      "target": "function:core/db.py:get_connection",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/db.py:get_ingestion_job_for_app",
+      "target": "function:core/db.py:get_connection",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/db.py:get_job_posting_detail",
+      "target": "function:core/db.py:get_connection",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/db.py:get_job_postings_by_company",
+      "target": "function:core/db.py:get_connection",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/db.py:has_applied",
+      "target": "function:core/db.py:get_connection",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/db.py:update_candidate_cv_url",
+      "target": "function:core/db.py:get_connection",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/fang_client.py:branch_new_conversation",
+      "target": "function:core/fang_client.py:_post",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/fang_client.py:chat_query",
+      "target": "function:core/fang_client.py:_post",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/fang_client.py:get_conversation_messages",
+      "target": "function:core/fang_client.py:_get",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/fang_client.py:get_ingestion_status",
+      "target": "function:core/fang_client.py:_get",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/fang_client.py:list_conversations",
+      "target": "function:core/fang_client.py:_get",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/fang_client.py:poll_ingestion_until_done",
+      "target": "function:core/fang_client.py:get_ingestion_status",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/fang_client.py:summarize_conversation",
+      "target": "function:core/fang_client.py:_post",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/fang_client.py:trigger_ingestion",
+      "target": "function:core/fang_client.py:_post",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/nmaiex_client.py:get_candidates_ranking",
+      "target": "function:core/nmaiex_client.py:_get",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/nmaiex_client.py:get_categories",
+      "target": "function:core/nmaiex_client.py:_get",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/nmaiex_client.py:get_job_detail",
+      "target": "function:core/nmaiex_client.py:_get",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/nmaiex_client.py:get_jobs_ranking",
+      "target": "function:core/nmaiex_client.py:_get",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/nmaiex_client.py:get_levels",
+      "target": "function:core/nmaiex_client.py:_get",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/nmaiex_client.py:get_provinces",
+      "target": "function:core/nmaiex_client.py:_get",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/nmaiex_client.py:get_skills",
+      "target": "function:core/nmaiex_client.py:_get",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/nmaiex_client.py:load_all_master_data",
+      "target": "function:core/nmaiex_client.py:get_categories",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/nmaiex_client.py:load_all_master_data",
+      "target": "function:core/nmaiex_client.py:get_levels",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/nmaiex_client.py:load_all_master_data",
+      "target": "function:core/nmaiex_client.py:get_provinces",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/nmaiex_client.py:load_all_master_data",
+      "target": "function:core/nmaiex_client.py:get_skills",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/nmaiex_client.py:update_candidate",
+      "target": "function:core/nmaiex_client.py:_patch",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/nmaiex_client.py:update_job_content",
+      "target": "function:core/nmaiex_client.py:_patch",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "function:core/nmaiex_client.py:update_job_structured",
+      "target": "function:core/nmaiex_client.py:_patch",
+      "type": "calls",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app.py",
+      "target": "file:core/db.py",
+      "type": "imports",
+      "weight": 0.7
+    },
+    {
+      "source": "file:app.py",
+      "target": "file:core/fang_client.py",
+      "type": "imports",
+      "weight": 0.7
+    },
+    {
+      "source": "file:app.py",
+      "target": "file:core/nmaiex_client.py",
+      "type": "imports",
+      "weight": 0.7
+    },
+    {
+      "source": "file:app.py",
+      "target": "file:core/cloudinary_upload.py",
+      "type": "imports",
+      "weight": 0.7
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:app.py",
+      "type": "documents",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:core/db.py",
+      "type": "documents",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:core/fang_client.py",
+      "type": "documents",
+      "weight": 0.5
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:core/cloudinary_upload.py",
+      "type": "documents",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/candidate_apply_guide.md",
+      "target": "file:app.py",
+      "type": "documents",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/candidate_apply_guide.md",
+      "target": "file:core/db.py",
+      "type": "documents",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/candidate_apply_guide.md",
+      "target": "file:core/fang_client.py",
+      "type": "documents",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/candidate_apply_guide.md",
+      "target": "file:core/cloudinary_upload.py",
+      "type": "documents",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/candidate_apply_strategy.md",
+      "target": "file:app.py",
+      "type": "documents",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/candidate_apply_strategy.md",
+      "target": "file:core/db.py",
+      "type": "documents",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/candidate_apply_strategy.md",
+      "target": "file:core/fang_client.py",
+      "type": "documents",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/candidate_apply_strategy.md",
+      "target": "file:core/cloudinary_upload.py",
+      "type": "documents",
+      "weight": 0.5
+    },
+    {
+      "source": "document:agent_workflow_doc/implementation_plan.md",
+      "target": "file:app.py",
+      "type": "documents",
+      "weight": 0.5
+    },
+    {
+      "source": "document:agent_workflow_doc/implementation_plan.md",
+      "target": "file:core/fang_client.py",
+      "type": "documents",
+      "weight": 0.5
+    },
+    {
+      "source": "document:agent_workflow_doc/implementation_plan.md",
+      "target": "file:core/nmaiex_client.py",
+      "type": "documents",
+      "weight": 0.5
+    },
+    {
+      "source": "document:agent_workflow_doc/implementation_plan.md",
+      "target": "file:core/cloudinary_upload.py",
+      "type": "documents",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/archive/hr_guide_v1.md",
+      "target": "document:README.md",
+      "type": "similar_to",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/archive/rag_strategy_v1.md",
+      "target": "document:agent_workflow_doc/implementation_plan.md",
+      "type": "similar_to",
+      "weight": 0.5
+    },
+    {
+      "source": "config:.env.example",
+      "target": "file:app.py",
+      "type": "configures",
+      "weight": 0.6
+    },
+    {
+      "source": "config:.env.example",
+      "target": "file:core/db.py",
+      "type": "configures",
+      "weight": 0.6
+    },
+    {
+      "source": "config:.env.example",
+      "target": "file:core/fang_client.py",
+      "type": "configures",
+      "weight": 0.6
+    },
+    {
+      "source": "config:.env.example",
+      "target": "file:core/nmaiex_client.py",
+      "type": "configures",
+      "weight": 0.6
+    },
+    {
+      "source": "config:.env.example",
+      "target": "file:core/cloudinary_upload.py",
+      "type": "configures",
+      "weight": 0.6
+    },
+    {
+      "source": "config:requirements.txt",
+      "target": "file:app.py",
+      "type": "configures",
+      "weight": 0.6
+    },
+    {
+      "source": "config:requirements.txt",
+      "target": "file:core/cloudinary_upload.py",
+      "type": "configures",
+      "weight": 0.6
+    },
+    {
+      "source": "config:requirements.txt",
+      "target": "file:core/db.py",
+      "type": "configures",
+      "weight": 0.6
+    },
+    {
+      "source": "config:requirements.txt",
+      "target": "file:core/fang_client.py",
+      "type": "configures",
+      "weight": 0.6
+    },
+    {
+      "source": "config:requirements.txt",
+      "target": "file:core/nmaiex_client.py",
+      "type": "configures",
+      "weight": 0.6
+    },
+    {
+      "source": "config:requirements.txt",
+      "target": "file:test_playwright.py",
+      "type": "configures",
+      "weight": 0.6
+    },
+    {
+      "source": "config:.pre-commit-config.yaml",
+      "target": "file:app.py",
+      "type": "configures",
+      "weight": 0.6
+    },
+    {
+      "source": "config:.pre-commit-config.yaml",
+      "target": "file:core/db.py",
+      "type": "configures",
+      "weight": 0.6
+    },
+    {
+      "source": "config:.pre-commit-config.yaml",
+      "target": "file:test_playwright.py",
+      "type": "configures",
+      "weight": 0.6
+    },
+    {
+      "source": "config:.gitleaks.toml",
+      "target": "config:.env.example",
+      "type": "related",
+      "weight": 0.5
+    },
+    {
+      "source": "config:.understand-anything/.understandignore",
+      "target": "document:README.md",
+      "type": "related",
+      "weight": 0.5
+    },
+    {
+      "source": "config:.understand-anything/.understandignore",
+      "target": "file:app.py",
+      "type": "configures",
+      "weight": 0.6
+    },
+    {
+      "source": "file:app.py",
+      "target": "file:test_playwright.py",
+      "type": "tested_by",
+      "weight": 0.5
+    }
+  ],
+  "layers": [
+    {
+      "id": "layer:presentation-and-flow",
+      "name": "Presentation And Flow",
+      "description": "Interactive Streamlit pages, page routing, and end-to-end user flow coordination for HR and candidate experiences.",
+      "nodeIds": [
+        "file:app.py"
+      ]
+    },
+    {
+      "id": "layer:integration-clients",
+      "name": "Integration Clients",
+      "description": "Adapters that call external services such as FANG, NMAIex, and Cloudinary while keeping orchestration logic out of the UI.",
+      "nodeIds": [
+        "file:core/cloudinary_upload.py",
+        "file:core/fang_client.py",
+        "file:core/nmaiex_client.py"
+      ]
+    },
+    {
+      "id": "layer:data-access",
+      "name": "Data Access",
+      "description": "SQL-backed relational access for users, job postings, applications, candidate profiles, and ingestion status records.",
+      "nodeIds": [
+        "file:core/db.py"
+      ]
+    },
+    {
+      "id": "layer:quality-and-operations",
+      "name": "Quality And Operations",
+      "description": "Local test automation and repository-level configuration that shape runtime dependencies, secret handling, quality checks, and analysis scope.",
+      "nodeIds": [
+        "file:test_playwright.py",
+        "config:.env.example",
+        "config:.gitleaks.toml",
+        "config:.pre-commit-config.yaml",
+        "config:.understand-anything/.understandignore",
+        "config:requirements.txt"
+      ]
+    },
+    {
+      "id": "layer:documentation-and-planning",
+      "name": "Documentation And Planning",
+      "description": "Human-readable project guides, strategy notes, and planning artifacts that explain the current architecture and its intended evolution.",
+      "nodeIds": [
+        "document:README.md",
+        "document:agent_workflow_doc/implementation_plan.md",
+        "document:docs/archive/hr_guide_v1.md",
+        "document:docs/archive/rag_strategy_v1.md",
+        "document:docs/candidate_apply_guide.md",
+        "document:docs/candidate_apply_strategy.md"
+      ]
+    }
+  ],
+  "tour": [
+    {
+      "order": 1,
+      "title": "Project Overview",
+      "description": "Start with the project overview and architecture plan to understand why miCareer-mini is intentionally a thin UI on top of FANG.",
+      "nodeIds": [
+        "document:README.md",
+        "document:agent_workflow_doc/implementation_plan.md"
+      ]
+    },
+    {
+      "order": 2,
+      "title": "UI Entrypoint",
+      "description": "Inspect the Streamlit entrypoint that initializes session state, selects pages, and coordinates both HR and candidate workflows.",
+      "nodeIds": [
+        "file:app.py"
+      ]
+    },
+    {
+      "order": 3,
+      "title": "Candidate Apply Flow",
+      "description": "Follow the candidate application path from UI to CV upload, application creation, and ingestion polling.",
+      "nodeIds": [
+        "document:docs/candidate_apply_strategy.md",
+        "document:docs/candidate_apply_guide.md",
+        "file:core/cloudinary_upload.py",
+        "file:core/fang_client.py"
+      ]
+    },
+    {
+      "order": 4,
+      "title": "Relational Data Backbone",
+      "description": "Review the database layer that supports authentication, job listing, application detail views, and candidate profile persistence.",
+      "nodeIds": [
+        "file:core/db.py"
+      ]
+    },
+    {
+      "order": 5,
+      "title": "External Service Adapters",
+      "description": "Read the FANG and NMAIex clients to see how ranking, chat, ingestion, and structured-job updates are delegated to backend APIs.",
+      "nodeIds": [
+        "file:core/fang_client.py",
+        "file:core/nmaiex_client.py"
+      ]
+    },
+    {
+      "order": 6,
+      "title": "Quality And Local Validation",
+      "description": "Finish with the local smoke test and repo-level config to see how the team validates the UI and controls dependencies and analysis scope.",
+      "nodeIds": [
+        "file:test_playwright.py",
+        "config:requirements.txt",
+        "config:.pre-commit-config.yaml"
+      ]
+    }
+  ]
+}

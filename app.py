@@ -51,6 +51,20 @@ _defaults = {
     # Phase 3: Ranking
     "hr_ranking_job_id": None,  # job HR đang xem AI ranking
     "hr_ranking_job_title": None,
+    # C3: JobPosting Agent — dùng prefix jobposting_agent_ để tránh collision
+    "jobposting_agent_job_id": None,  # jobPostId đang mở agent
+    "jobposting_agent_job_title": None,  # cached title cho header/sidebar
+    "jobposting_agent_conversation_id": None,  # conversation hiện tại (chỉ agent này)
+    "jobposting_agent_conversations": [],  # danh sách conversations cho job hiện tại
+    "jobposting_agent_messages": [],  # messages của conversation đang chọn
+    "jobposting_agent_working_set": None,  # last response working set
+    "jobposting_agent_source_job_app_ids": [],  # last response source IDs
+    "jobposting_agent_last_tool_calls": [],  # tool calls từ turn hiện tại
+    "jobposting_agent_warnings": [],  # last response warnings
+    "jobposting_agent_error": None,  # last user-facing error
+    "jobposting_agent_pending_prompt": None,  # prompt đang chờ gửi
+    "jobposting_agent_is_loading": False,  # True khi đang gọi API
+    "jobposting_agent_rename_title": "",  # rename input cho conversation đang chọn
 }
 for k, v in _defaults.items():
     if k not in st.session_state:
@@ -161,7 +175,7 @@ def page_hr_jobs():
 
     for j in jobs:
         with st.container(border=True):
-            col1, col2, col3 = st.columns([4, 1, 1])
+            col1, col2, col3, col4 = st.columns([4, 1, 1, 1])
             with col1:
                 st.markdown(f"**{j['title']}**")
                 st.caption(f"Hết hạn: {j['expat']}")
@@ -181,6 +195,14 @@ def page_hr_jobs():
                 ):
                     st.session_state.selected_job_id = j["jobpostid"]
                     go("hr_applications")
+            with col4:
+                if st.button(
+                    "🤖 Agent",
+                    key=f"hr_job_agent_{j['jobpostid']}",
+                    use_container_width=True,
+                    help="Mở Job Agent để phân tích ứng viên bằng AI",
+                ):
+                    _open_jobposting_agent(j["jobpostid"], j["title"])
 
     st.divider()
     if st.button("🚪 Đăng xuất", key="logout_hr", use_container_width=True):
@@ -240,6 +262,15 @@ def page_hr_job_view():
         ):
             st.session_state.selected_job_id = job_id
             go("hr_applications")
+
+        if st.button(
+            "🤖 Hỏi Agent về job này",
+            use_container_width=True,
+            key=f"job_agent_from_view_{job_id}",
+            help="Mở Job Agent để phân tích toàn bộ ứng viên của job này bằng AI",
+        ):
+            job_title_val = job.get("title")
+            _open_jobposting_agent(job_id, job_title_val)
 
 
 def page_hr_job_edit():
@@ -685,6 +716,14 @@ def page_hr_ai_ranking():
     job_id = st.session_state.hr_ranking_job_id
     job_title = st.session_state.hr_ranking_job_title or f"Job #{job_id}"
 
+    # Entry point: Phân tích bằng Agent (secondary action)
+    if job_id and st.button(
+        "🤖 Phân tích bằng Agent",
+        key="ranking_to_job_agent",
+        help="Mở Job Agent để phân tích ứng viên chi tiết hơn",
+    ):
+        _open_jobposting_agent(job_id, job_title)
+
     if not job_id:
         st.error("Không có job nào được chọn.")
         go("hr_jobs")
@@ -702,6 +741,14 @@ def page_hr_applications():
 
     job_id = st.session_state.selected_job_id
     st.title("📋 Danh sách ứng viên")
+
+    # Entry point: Mở Job Agent cho job này
+    if job_id and st.button(
+        "🤖 Mở Job Agent",
+        key="open_job_agent_from_apps",
+        help="Phân tích toàn bộ ứng viên của job này bằng AI Agent",
+    ):
+        _open_jobposting_agent(job_id)
 
     master = _ensure_master_data()
 
@@ -1558,6 +1605,577 @@ def page_candidate_apply():
 
 
 # ===========================================================================
+# C3: JOBPOSTING AGENT
+# ===========================================================================
+
+# Tool display name mapping (tiếng Việt)
+_TOOL_DISPLAY_NAMES: dict[str, str] = {
+    "get_job_posting_context": "Xem thông tin tin tuyển dụng",
+    "get_job_candidate_ranking": "Xếp hạng ứng viên",
+    "search_job_applications_text": "Tìm kiếm ứng viên",
+    "get_job_application_summary": "Tóm tắt ứng viên",
+    "get_job_application_full_cv": "Xem CV đã mask PII",
+    "get_candidate_ats_history": "Lịch sử tuyển dụng",
+    "count_job_applications": "Đếm ứng viên",
+}
+
+# Quick prompts gợi ý
+_QUICK_PROMPTS = [
+    "Liệt kê top 10 ứng viên phù hợp nhất cho job này, nêu lý do ngắn gọn.",
+    "Trong nhóm này, lọc ứng viên có tiếng Anh Advanced trở lên.",
+    "So sánh 3 ứng viên nổi bật nhất trong nhóm hiện tại.",
+    "Ứng viên nào có kinh nghiệm backend + AI tốt nhất?",
+    "Đếm số ứng viên theo trạng thái tuyển dụng hiện tại.",
+    "Gợi ý shortlist 5 ứng viên nên phỏng vấn trước.",
+]
+
+# HTTP status → Vietnamese message
+_HTTP_ERROR_MESSAGES: dict[int, str] = {
+    400: "Yêu cầu không hợp lệ. Vui lòng kiểm tra nội dung nhập.",
+    403: "Bạn không có quyền truy cập tin tuyển dụng hoặc hội thoại này.",
+    404: "Không tìm thấy tin tuyển dụng hoặc hội thoại.",
+    410: "Hội thoại này đã được lưu trữ. Hãy tạo hội thoại mới.",
+    429: "Hệ thống AI đang quá tải. Vui lòng thử lại sau.",
+    500: "Lỗi hệ thống khi xử lý Job Agent. Vui lòng thử lại.",
+    503: "Dịch vụ AI tạm thời không khả dụng. Vui lòng kiểm tra FANG backend.",
+}
+
+
+def _jobposting_agent_error_message(exc: Exception) -> str:
+    """Map HTTPError status code sang Vietnamese UI message."""
+    import requests as _req
+
+    if isinstance(exc, _req.HTTPError) and exc.response is not None:
+        code = exc.response.status_code
+        return _HTTP_ERROR_MESSAGES.get(code, f"Lỗi không xác định (HTTP {code}).")
+    err_str = str(exc).lower()
+    if "timeout" in err_str or "connection" in err_str or "connect" in err_str:
+        return "Không kết nối được FANG hoặc yêu cầu quá thời gian chờ."
+    return f"Lỗi không xác định: {exc}"
+
+
+def _open_jobposting_agent(job_id: int, job_title: str | None = None) -> None:
+    """Set session state và route sang hr_job_agent.
+
+    Nếu mở với jobPostId khác thì reset conversation/messages/working_set/sources.
+    """
+    if st.session_state.jobposting_agent_job_id != job_id:
+        st.session_state.jobposting_agent_conversation_id = None
+        st.session_state.jobposting_agent_conversations = []
+        st.session_state.jobposting_agent_messages = []
+        st.session_state.jobposting_agent_working_set = None
+        st.session_state.jobposting_agent_source_job_app_ids = []
+        st.session_state.jobposting_agent_last_tool_calls = []
+        st.session_state.jobposting_agent_warnings = []
+        st.session_state.jobposting_agent_error = None
+        st.session_state.jobposting_agent_rename_title = ""
+    st.session_state.jobposting_agent_job_id = job_id
+    if job_title:
+        st.session_state.jobposting_agent_job_title = job_title
+    go("hr_job_agent")
+
+
+def _render_jobposting_agent_tool_message(tool_call: dict, step_idx: int) -> None:
+    """Render 1 tool_call/tool_result dưới dạng collapsed expander."""
+    import json as _json
+
+    tool_name = tool_call.get("toolName") or tool_call.get("name", "unknown")
+    display_name = _TOOL_DISPLAY_NAMES.get(tool_name, tool_name)
+    status = tool_call.get("status", "")
+    latency = tool_call.get("latencyMs")
+    result_summary = tool_call.get("resultSummary") or tool_call.get(
+        "result_summary", ""
+    )
+    error_msg = tool_call.get("errorMsg") or tool_call.get("error_msg", "")
+
+    label = f"Bước {step_idx}: {display_name}"
+    if status:
+        label += f" — {status}"
+
+    with st.expander(label, expanded=False):
+        if latency is not None:
+            st.caption(f"⏱ {latency}ms")
+        # Args
+        args = tool_call.get("args") or tool_call.get("arguments")
+        if args:
+            try:
+                if isinstance(args, str):
+                    args = _json.loads(args)
+                st.json(args)
+            except Exception:
+                st.code(str(args))
+        # Result summary
+        if result_summary:
+            st.markdown(f"**Kết quả:** {result_summary}")
+        # Raw content (history tool rows)
+        content = tool_call.get("content")
+        if content and not result_summary:
+            try:
+                if isinstance(content, str):
+                    content = _json.loads(content)
+                st.json(content)
+            except Exception:
+                st.code(str(content))
+        if error_msg:
+            st.error(f"❌ {error_msg}")
+
+
+def _render_jobposting_agent_messages(messages: list[dict]) -> None:
+    """Render danh sách messages: user/assistant bubbles + tool expanders."""
+    if not messages:
+        st.info("Hội thoại mới — hãy hỏi về ứng viên của job này.")
+        return
+
+    tool_step = 0
+    for m in messages:
+        role = m.get("role", "")
+        content = m.get("content", "")
+
+        if role == "user":
+            with st.chat_message("user"):
+                st.markdown(content)
+
+        elif role == "assistant":
+            with st.chat_message("assistant"):
+                st.markdown(content)
+                model = m.get("model")
+                latency = m.get("latencyMs")
+                if model or latency:
+                    parts = []
+                    if model:
+                        parts.append(f"🔧 `{model}`")
+                    if latency:
+                        parts.append(f"⏱ {latency}ms")
+                    st.caption(" | ".join(parts))
+
+        elif role in ("tool_call", "tool_result"):
+            tool_step += 1
+            _render_jobposting_agent_tool_message(m, tool_step)
+
+
+def _render_jobposting_agent_working_set(
+    working_set: dict | None,
+    source_job_app_ids: list[int],
+) -> None:
+    """Render working set panel + source chips sau assistant response.
+
+    FE-3: dùng db.get_application_summaries_by_ids để hiển thị tên/trạng thái
+    thay vì chỉ ID thô. Defensive fallback về raw ID nếu DB lookup thất bại.
+    """
+    MAX_CHIPS = 25
+
+    def _make_chip_label(jaid: int, summary_map: dict) -> str:
+        s = summary_map.get(jaid)
+        if s:
+            name = f"{s.get('fname', '')} {s.get('lname', '')}".strip()
+            stat = s.get("stat", "")
+            return f"{name} [{stat}]" if stat else (name or f"#{jaid}")
+        return f"#{jaid}"
+
+    if working_set:
+        label = working_set.get("label") or "Tập ứng viên hiện tại"
+        job_app_ids: list[int] = working_set.get("jobAppIds") or []
+        filters: dict = working_set.get("filters") or {}
+
+        # Lookup names từ DB (defensive)
+        visible_ids = job_app_ids[:MAX_CHIPS]
+        summary_map: dict = {}
+        if visible_ids:
+            try:
+                rows = db.get_application_summaries_by_ids(visible_ids)
+                summary_map = {r["jobappid"]: r for r in rows}
+            except Exception:
+                pass  # fallback to raw IDs
+
+        with st.container(border=True):
+            col_l, col_r = st.columns([3, 1])
+            with col_l:
+                st.markdown(f"**📋 {label}**")
+            with col_r:
+                st.metric("Ứng viên", len(job_app_ids))
+
+            # Active filter chips
+            if filters:
+                filter_parts = [f"`{k}={v}`" for k, v in filters.items()]
+                st.markdown(" ".join(filter_parts))
+
+            # JobApp chips — mỗi chip hiện tên nếu biết, không thì dùng ID
+            overflow = len(job_app_ids) - MAX_CHIPS
+            if visible_ids:
+                n_cols = min(len(visible_ids), 4)
+                chip_cols = st.columns(n_cols)
+                for idx, jaid in enumerate(visible_ids):
+                    with chip_cols[idx % n_cols]:
+                        chip_label = _make_chip_label(jaid, summary_map)
+                        if st.button(
+                            chip_label,
+                            key=f"ws_chip_{jaid}",
+                            use_container_width=True,
+                            help=f"Mở hồ sơ jobAppId={jaid}",
+                        ):
+                            st.session_state.selected_app_id = jaid
+                            st.session_state.conversation_id = None
+                            go("hr_app_detail")
+            if overflow > 0:
+                st.caption(f"+{overflow} ứng viên khác")
+
+    # Source chips — riêng biệt với working set
+    if source_job_app_ids:
+        src_visible = source_job_app_ids[:MAX_CHIPS]
+        src_summary_map: dict = {}
+        try:
+            rows = db.get_application_summaries_by_ids(src_visible)
+            src_summary_map = {r["jobappid"]: r for r in rows}
+        except Exception:
+            pass
+
+        with st.container(border=True):
+            st.markdown("**🔗 Nguồn được trích dẫn trong câu trả lời**")
+            src_overflow = len(source_job_app_ids) - MAX_CHIPS
+            n_cols = min(len(src_visible), 4)
+            src_cols = st.columns(n_cols)
+            for idx, jaid in enumerate(src_visible):
+                with src_cols[idx % n_cols]:
+                    chip_label = _make_chip_label(jaid, src_summary_map)
+                    if st.button(
+                        chip_label,
+                        key=f"src_chip_{jaid}",
+                        use_container_width=True,
+                        help=f"Xem hồ sơ jobAppId={jaid}",
+                    ):
+                        st.session_state.selected_app_id = jaid
+                        st.session_state.conversation_id = None
+                        go("hr_app_detail")
+            if src_overflow > 0:
+                st.caption(f"+{src_overflow} nguồn khác")
+
+
+def _render_jobposting_agent_sidebar(job_id: int, hr_id: int) -> None:
+    """Render cột trái: conversation list, new/rename/archive, quick prompts."""
+    is_loading = st.session_state.jobposting_agent_is_loading
+
+    # --- New conversation button ---
+    if st.button(
+        "➕ Hội thoại mới",
+        use_container_width=True,
+        disabled=is_loading,
+        key="jp_new_conv",
+    ):
+        st.session_state.jobposting_agent_conversation_id = None
+        st.session_state.jobposting_agent_messages = []
+        st.session_state.jobposting_agent_working_set = None
+        st.session_state.jobposting_agent_source_job_app_ids = []
+        st.session_state.jobposting_agent_last_tool_calls = []
+        st.session_state.jobposting_agent_warnings = []
+        st.session_state.jobposting_agent_error = None
+        # Refresh conversation list
+        try:
+            st.session_state.jobposting_agent_conversations = (
+                fang_client.list_jobposting_agent_conversations(job_id, hr_id)
+            )
+        except Exception:
+            pass
+        st.rerun()
+
+    st.divider()
+
+    # --- Conversation list ---
+    conversations = st.session_state.jobposting_agent_conversations
+    if not conversations:
+        st.caption("Chưa có hội thoại cho job này.")
+    else:
+        st.markdown("**Hội thoại**")
+        current_conv_id = st.session_state.jobposting_agent_conversation_id
+        for c in conversations:
+            cid = c.get("conversationId", "")
+            title = c.get("title") or f"Hội thoại {cid[:8]}..."
+            msg_count = c.get("messageCount", 0)
+            is_active = cid == current_conv_id
+
+            btn_label = f"{'▶ ' if is_active else ''}{title}"
+            if st.button(
+                btn_label,
+                key=f"jp_conv_{cid}",
+                use_container_width=True,
+                disabled=is_loading,
+                type="primary" if is_active else "secondary",
+            ):
+                if cid != current_conv_id:
+                    st.session_state.jobposting_agent_conversation_id = cid
+                    st.session_state.jobposting_agent_rename_title = title
+                    # Load messages
+                    try:
+                        st.session_state.jobposting_agent_messages = (
+                            fang_client.get_jobposting_agent_messages(cid)
+                        )
+                    except Exception:
+                        st.session_state.jobposting_agent_error = (
+                            "Không tải được lịch sử hội thoại."
+                        )
+                    st.session_state.jobposting_agent_working_set = None
+                    st.session_state.jobposting_agent_source_job_app_ids = []
+                    st.rerun()
+            st.caption(f"{msg_count} tin nhắn")
+
+    st.divider()
+
+    # --- Rename ---
+    current_conv_id = st.session_state.jobposting_agent_conversation_id
+    if current_conv_id:
+        st.markdown("**Đổi tên hội thoại**")
+        new_title = st.text_input(
+            "Tên mới",
+            value=st.session_state.jobposting_agent_rename_title,
+            key="jp_rename_input",
+            disabled=is_loading,
+            label_visibility="collapsed",
+        )
+        if st.button(
+            "💾 Lưu tên",
+            use_container_width=True,
+            disabled=is_loading or not new_title.strip(),
+            key="jp_rename_btn",
+        ):
+            try:
+                fang_client.rename_jobposting_agent_conversation(
+                    current_conv_id, hr_id, new_title.strip()
+                )
+                st.session_state.jobposting_agent_rename_title = new_title.strip()
+                st.session_state.jobposting_agent_conversations = (
+                    fang_client.list_jobposting_agent_conversations(job_id, hr_id)
+                )
+                st.rerun()
+            except Exception as e:
+                st.error(_jobposting_agent_error_message(e))
+
+        # --- Archive ---
+        if st.button(
+            "🗑️ Lưu trữ hội thoại này",
+            use_container_width=True,
+            disabled=is_loading,
+            key="jp_archive_btn",
+            type="secondary",
+        ):
+            try:
+                fang_client.archive_jobposting_agent_conversation(
+                    current_conv_id, hr_id
+                )
+                st.session_state.jobposting_agent_conversation_id = None
+                st.session_state.jobposting_agent_messages = []
+                st.session_state.jobposting_agent_working_set = None
+                st.session_state.jobposting_agent_conversations = (
+                    fang_client.list_jobposting_agent_conversations(job_id, hr_id)
+                )
+                st.rerun()
+            except Exception as e:
+                st.error(_jobposting_agent_error_message(e))
+
+    st.divider()
+
+    # --- Quick Prompts ---
+    st.markdown("**Câu hỏi nhanh**")
+    for i, qp in enumerate(_QUICK_PROMPTS):
+        if st.button(
+            qp[:55] + ("…" if len(qp) > 55 else ""),
+            key=f"jp_qp_{i}",
+            use_container_width=True,
+            disabled=is_loading,
+            help=qp,
+        ):
+            st.session_state.jobposting_agent_pending_prompt = qp
+            st.rerun()
+
+
+def page_hr_job_agent() -> None:
+    """🤖 JobPosting Agent — HR hỏi về toàn bộ ứng viên của 1 job."""
+    hr_id: int = st.session_state.hr_user["userid"]
+    job_id: int | None = st.session_state.jobposting_agent_job_id
+
+    # Guard: phải có job_id
+    if not job_id:
+        st.error("Không có job nào được chọn cho Job Agent.")
+        if st.button("← Quay lại danh sách Job", key="jp_back_no_job"):
+            go("hr_jobs")
+        return
+
+    # Load job detail để hiển thị context header
+    job = db.get_job_posting_detail(job_id)
+    job_title = st.session_state.jobposting_agent_job_title or (
+        job["title"] if job else f"Job #{job_id}"
+    )
+    if job and not st.session_state.jobposting_agent_job_title:
+        st.session_state.jobposting_agent_job_title = job["title"]
+
+    # Load conversation list nếu chưa có
+    if not st.session_state.jobposting_agent_conversations:
+        try:
+            st.session_state.jobposting_agent_conversations = (
+                fang_client.list_jobposting_agent_conversations(job_id, hr_id)
+            )
+        except Exception:
+            pass
+
+    # --- Header ---
+    col_back, col_title = st.columns([1, 6])
+    with col_back:
+        if st.button("← Quay lại", key="jp_back"):
+            go("hr_jobs")
+    with col_title:
+        st.title(f"🤖 Job Agent: {job_title}")
+
+    if job:
+        meta_parts = []
+        if job.get("compname"):
+            meta_parts.append(f"🏢 {job['compname']}")
+        if job.get("expat"):
+            meta_parts.append(f"📅 Hết hạn: {job['expat']}")
+        # Count applications
+        apps = db.get_applications_for_job(job_id)
+        meta_parts.append(f"👥 {len(apps)} ứng viên")
+        st.caption("  |  ".join(meta_parts))
+
+    st.divider()
+
+    # --- 2-column layout ---
+    col_left, col_right = st.columns([1, 3])
+
+    # ── Cột trái: sidebar ──
+    with col_left:
+        _render_jobposting_agent_sidebar(job_id, hr_id)
+
+    # ── Cột phải: chat ──
+    with col_right:
+        is_loading = st.session_state.jobposting_agent_is_loading
+
+        # Error banner
+        if st.session_state.jobposting_agent_error:
+            st.error(st.session_state.jobposting_agent_error)
+
+        # Warnings banner
+        for w in st.session_state.jobposting_agent_warnings:
+            msg = w.get("message", str(w))
+            suggestion = w.get("suggestion", "")
+            warn_text = f"⚠️ {msg}"
+            if suggestion:
+                warn_text += f"\nGợi ý: {suggestion}"
+            st.warning(warn_text)
+
+        # Chat history container
+        chat_box = st.container(height=460)
+        with chat_box:
+            _render_jobposting_agent_messages(
+                st.session_state.jobposting_agent_messages
+            )
+
+        # Working set + source chips
+        _render_jobposting_agent_working_set(
+            st.session_state.jobposting_agent_working_set,
+            st.session_state.jobposting_agent_source_job_app_ids,
+        )
+
+        # Loading status hint
+        if is_loading:
+            st.caption("⏳ Có thể mất 10–60 giây tùy số ứng viên và công cụ được gọi.")
+
+        # --- Chat input ---
+        prompt_from_quick = st.session_state.jobposting_agent_pending_prompt
+        if prompt_from_quick:
+            st.session_state.jobposting_agent_pending_prompt = None
+            prompt = prompt_from_quick
+        else:
+            prompt = st.chat_input(
+                "Hỏi về ứng viên của job này...",
+                key="jp_chat_input",
+                disabled=is_loading,
+            )
+
+        if prompt:
+            # Optimistic user message display
+            with chat_box:
+                with st.chat_message("user"):
+                    st.markdown(prompt)
+
+            st.session_state.jobposting_agent_is_loading = True
+            st.session_state.jobposting_agent_error = None
+            st.session_state.jobposting_agent_warnings = []
+
+            with st.spinner("FANG Job Agent đang phân tích ứng viên và gọi công cụ..."):
+                try:
+                    result = fang_client.jobposting_agent_query(
+                        job_post_id=job_id,
+                        hr_id=hr_id,
+                        prompt=prompt,
+                        conversation_id=st.session_state.jobposting_agent_conversation_id,
+                    )
+
+                    # Update conversation state
+                    new_conv_id = str(result.get("conversationId", ""))
+                    if new_conv_id:
+                        st.session_state.jobposting_agent_conversation_id = new_conv_id
+
+                    # Store response data
+                    st.session_state.jobposting_agent_last_tool_calls = (
+                        result.get("toolCalls") or []
+                    )
+                    st.session_state.jobposting_agent_working_set = result.get(
+                        "workingSet"
+                    )
+                    st.session_state.jobposting_agent_source_job_app_ids = (
+                        result.get("sourceJobAppIds") or []
+                    )
+                    st.session_state.jobposting_agent_warnings = (
+                        result.get("warnings") or []
+                    )
+
+                    # Build assistant message for display
+                    assistant_msg = {
+                        "role": "assistant",
+                        "content": result.get("response", ""),
+                        "model": result.get("model"),
+                        "latencyMs": result.get("latencyMs"),
+                    }
+
+                    # Reload full message history (authoritative)
+                    if new_conv_id:
+                        try:
+                            st.session_state.jobposting_agent_messages = (
+                                fang_client.get_jobposting_agent_messages(new_conv_id)
+                            )
+                        except Exception:
+                            # Fallback: append locally
+                            st.session_state.jobposting_agent_messages.append(
+                                {"role": "user", "content": prompt}
+                            )
+                            st.session_state.jobposting_agent_messages.append(
+                                assistant_msg
+                            )
+                    else:
+                        st.session_state.jobposting_agent_messages.append(
+                            {"role": "user", "content": prompt}
+                        )
+                        st.session_state.jobposting_agent_messages.append(assistant_msg)
+
+                    # Refresh conversation list
+                    try:
+                        st.session_state.jobposting_agent_conversations = (
+                            fang_client.list_jobposting_agent_conversations(
+                                job_id, hr_id
+                            )
+                        )
+                    except Exception:
+                        pass
+
+                except Exception as e:
+                    st.session_state.jobposting_agent_error = (
+                        _jobposting_agent_error_message(e)
+                    )
+                finally:
+                    st.session_state.jobposting_agent_is_loading = False
+
+            st.rerun()
+
+
+# ===========================================================================
 # Router
 # ===========================================================================
 
@@ -1599,7 +2217,11 @@ elif page == "hr_ai_ranking":
         page_hr_ai_ranking()
     else:
         go("login_hr")
-
+elif page == "hr_job_agent":
+    if st.session_state.hr_user:
+        page_hr_job_agent()
+    else:
+        go("login_hr")
 
 # Candidate flow
 elif page == "login_candidate":
