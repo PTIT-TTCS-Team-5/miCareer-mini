@@ -19,6 +19,11 @@ CANDIDATE_PASSWORD = "1"
 AGENT_TIMEOUT = 90000
 DEFAULT_TIMEOUT = 15000
 SLOW_MO = 500
+JOB_AGENT_QUICK_PROMPTS = [
+    "Xếp hạng 10 ứng viên phù hợp nhất.",
+    "Những ứng viên nào có chứng chỉ tiếng Anh TOEIC từ 600 trở lên?",
+    "So sánh 3 ứng viên nổi bật nhất.",
+]
 
 
 def wait_streamlit(page: Page, ms: int = 2000) -> None:
@@ -50,8 +55,8 @@ def get_conversation_buttons(page: Page):
     count = all_buttons.count()
 
     conv_buttons = []
-    # Quick prompts are the last 6 buttons in the sidebar column
-    limit = count - 6
+    # Current JobPosting Agent empty-state quick prompts are the last 3 prompt buttons.
+    limit = count - len(JOB_AGENT_QUICK_PROMPTS)
     for i in range(limit):
         btn = all_buttons.nth(i)
         txt = btn.inner_text().strip()
@@ -65,6 +70,16 @@ def get_conversation_buttons(page: Page):
             continue
         conv_buttons.append(btn)
     return conv_buttons
+
+
+def open_first_tool_output(page: Page) -> None:
+    outer = page.locator("details summary:has-text('Bước')").last
+    outer.click()
+    wait_streamlit(page, 800)
+    nested = page.locator("details summary:has-text('📤 Kết quả lệnh')").last
+    nested.click()
+    wait_streamlit(page, 800)
+    expect(page.locator("body")).to_contain_text("data")
 
 
 def run_test_suite():
@@ -277,9 +292,10 @@ def run_test_suite():
             wait_streamlit(page, 3000)
 
             # Check suggested prompts
-            expect(
-                page.locator("button:has-text('Xếp hạng 10 ứng viên')").first
-            ).to_be_visible()
+            for prompt in JOB_AGENT_QUICK_PROMPTS:
+                expect(
+                    page.locator(f"button:has-text('{prompt}')").first
+                ).to_be_visible()
 
             # Send top candidates prompt
             chat_input = page.get_by_placeholder(
@@ -293,25 +309,36 @@ def run_test_suite():
             print("[INFO] Waiting for agent analysis response...")
             wait_for_query_completion(page)
 
-            expect(page.locator("body")).to_contain_text(
-                "Dưới đây là danh sách 10 ứng viên"
-            )
+            expect(page.locator("body")).to_contain_text("ứng viên")
             expect(page.locator("body")).to_contain_text("Bước 1: Xếp hạng ứng viên")
+            open_first_tool_output(page)
+            expect(page.locator("body")).to_contain_text("match_label")
 
-            # Send language filter follow-up in same conversation
+            # Send structured TOEIC certificate follow-up in same conversation
             chat_input = page.get_by_placeholder(
                 "Tìm nhanh ứng viên sáng giá cùng FANG."
             )
-            chat_input.fill(
-                "Trong nhóm này, lọc ứng viên có tiếng Anh Advanced trở lên."
-            )
+            chat_input.fill(JOB_AGENT_QUICK_PROMPTS[1])
             chat_input.press("Enter")
 
             print("[INFO] Waiting for follow-up response...")
             wait_for_query_completion(page)
 
-            # Now assert the actual response contains English language requirements or candidate names
-            expect(page.locator("body")).to_contain_text("Advanced")
+            expect(page.locator("body")).to_contain_text("TOEIC")
+            open_first_tool_output(page)
+            expect(page.locator("body")).to_contain_text(
+                "find_candidates_by_language_certificate"
+            )
+            expect(page.locator("body")).to_contain_text("filters_used")
+
+            # Send top-3 comparison prompt to exercise deterministic ranking explanation
+            chat_input = page.get_by_placeholder(
+                "Tìm nhanh ứng viên sáng giá cùng FANG."
+            )
+            chat_input.fill(JOB_AGENT_QUICK_PROMPTS[2])
+            chat_input.press("Enter")
+            wait_for_query_completion(page)
+            expect(page.locator("body")).to_contain_text("So sánh")
 
             # Expand the working set expander in the right column
             print("[INFO] Expanding working set expander...")

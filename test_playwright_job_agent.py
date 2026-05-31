@@ -18,12 +18,9 @@ DEFAULT_TIMEOUT = 15000
 SLOW_MO = 500
 
 _QUICK_PROMPTS = [
-    "Liệt kê top 10 ứng viên phù hợp nhất cho job này, nêu lý do ngắn gọn.",
-    "Trong nhóm này, lọc ứng viên có tiếng Anh Advanced trở lên.",
-    "So sánh 3 ứng viên nổi bật nhất trong nhóm hiện tại.",
-    "Ứng viên nào có kinh nghiệm backend + AI tốt nhất?",
-    "Đếm số ứng viên theo trạng thái tuyển dụng hiện tại.",
-    "Gợi ý shortlist 5 ứng viên nên phỏng vấn trước.",
+    "Xếp hạng 10 ứng viên phù hợp nhất.",
+    "Những ứng viên nào có chứng chỉ tiếng Anh TOEIC từ 600 trở lên?",
+    "So sánh 3 ứng viên nổi bật nhất.",
 ]
 
 
@@ -43,8 +40,8 @@ def get_conversation_buttons(page: Page):
         print(f"[DEBUG]   Button {i}: '{all_buttons.nth(i).inner_text().strip()}'")
 
     conv_buttons = []
-    # The last 6 buttons are quick prompts
-    limit = count - 6
+    # Current empty-state quick prompts are the last 3 prompt buttons when present.
+    limit = count - len(_QUICK_PROMPTS)
     for i in range(limit):
         btn = all_buttons.nth(i)
         txt = btn.inner_text().strip()
@@ -59,6 +56,21 @@ def get_conversation_buttons(page: Page):
         conv_buttons.append(btn)
     print(f"[DEBUG] get_conversation_buttons: returned {len(conv_buttons)} buttons")
     return conv_buttons
+
+
+def chat_input(page: Page):
+    return page.get_by_placeholder("Tìm nhanh ứng viên sáng giá cùng FANG.")
+
+
+def open_first_tool_output(page: Page) -> None:
+    """Open outer tool-step expander and nested sanitized result output."""
+    outer = page.locator("details summary:has-text('Bước')").last
+    outer.click()
+    wait_streamlit(page, 800)
+    nested = page.locator("details summary:has-text('📤 Kết quả lệnh')").last
+    nested.click()
+    wait_streamlit(page, 800)
+    expect(page.locator("body")).to_contain_text("data")
 
 
 def run_test_suite():
@@ -141,9 +153,10 @@ def run_test_suite():
             expect(
                 page.locator("button:has-text('Hội thoại mới')").first
             ).to_be_visible()
-            expect(
-                page.locator("button:has-text('Liệt kê top 10')").first
-            ).to_be_visible()
+            for prompt in _QUICK_PROMPTS:
+                expect(
+                    page.locator(f"button:has-text('{prompt}')").first
+                ).to_be_visible()
             expect(page.locator("text=Hội thoại mới").first).to_be_visible()
 
             log_result("TC03", "Verify Job Agent page layout & quick prompts", "PASS")
@@ -157,11 +170,9 @@ def run_test_suite():
         # ---------------------------------------------------------------------------
         try:
             print("\n[STEP] TC04 — Send top 10 candidates query...")
-            chat_input = page.get_by_placeholder("Hỏi về ứng viên của job này...")
-            chat_input.fill(
-                "Liệt kê top 10 ứng viên phù hợp nhất cho job này, nêu lý do ngắn gọn."
-            )
-            chat_input.press("Enter")
+            chat = chat_input(page)
+            chat.fill(_QUICK_PROMPTS[0])
+            chat.press("Enter")
 
             print("[INFO] Waiting for agent analysis response (up to 90s)...")
             # Wait for second stChatMessage locator to load using Playwright wait_for
@@ -193,8 +204,11 @@ def run_test_suite():
             if expanders.count() > 0:
                 expanders.first.click()
                 wait_streamlit(page, 1000)
-                # Verify internal json details loaded
-                expect(page.locator("details").first).to_contain_text("{")
+                page.locator(
+                    "details summary:has-text('📤 Kết quả lệnh')"
+                ).first.click()
+                wait_streamlit(page, 1000)
+                expect(page.locator("body")).to_contain_text("data")
                 log_result("TC05", "Verify tool expander exists and can open", "PASS")
             else:
                 log_result(
@@ -246,11 +260,9 @@ def run_test_suite():
             initial_count = len(initial_convs)
             print(f"[INFO] Initial conversation count: {initial_count}")
 
-            chat_input = page.get_by_placeholder("Hỏi về ứng viên của job này...")
-            chat_input.fill(
-                "Trong nhóm này, lọc ứng viên có tiếng Anh Advanced trở lên."
-            )
-            chat_input.press("Enter")
+            chat = chat_input(page)
+            chat.fill(_QUICK_PROMPTS[1])
+            chat.press("Enter")
 
             print("[INFO] Waiting for follow-up response...")
             page.locator("div[data-testid='stChatMessage']").nth(3).wait_for(
@@ -280,6 +292,29 @@ def run_test_suite():
             log_result(
                 "TC07",
                 "Verify multi-turn follow-up within same conversation",
+                "FAIL",
+                str(e),
+            )
+
+        # ---------------------------------------------------------------------------
+        # TC07B: Structured TOEIC tool output
+        # ---------------------------------------------------------------------------
+        try:
+            print("\n[STEP] TC07B — Verify TOEIC structured batch tool output...")
+            open_first_tool_output(page)
+            expect(page.locator("body")).to_contain_text(
+                "find_candidates_by_language_certificate"
+            )
+            expect(page.locator("body")).to_contain_text("filters_used")
+            log_result(
+                "TC07B",
+                "Verify TOEIC prompt uses structured language certificate tool preview",
+                "PASS",
+            )
+        except Exception as e:
+            log_result(
+                "TC07B",
+                "Verify TOEIC prompt uses structured language certificate tool preview",
                 "FAIL",
                 str(e),
             )
@@ -416,13 +451,7 @@ def run_test_suite():
         # ---------------------------------------------------------------------------
         try:
             print("\n[STEP] TC11 — Trigger quick prompt...")
-            # Click quick prompt from the sidebar column (the 6th button from the end of all buttons in left_col)
-            left_col = page.locator("[data-testid='stColumn']").filter(
-                has=page.locator("button:has-text('➕ Hội thoại mới')")
-            )
-            all_buttons = left_col.locator("button")
-            btn_count = all_buttons.count()
-            first_qp_btn = all_buttons.nth(btn_count - 6)
+            first_qp_btn = page.locator(f"button:has-text('{_QUICK_PROMPTS[0]}')").first
             print(f"[INFO] Clicking quick prompt: {first_qp_btn.inner_text()}")
             first_qp_btn.click()
 
@@ -533,7 +562,7 @@ def run_test_suite():
             wait_streamlit(page, 5000)  # Give extra time to load 500 apps list
 
             # Open RAG details for first candidate
-            page.locator("button:has-text('Đánh giá RAG')").first.click()
+            page.locator("button:has-text('Đánh giá CV')").first.click()
             wait_streamlit(page, 3000)
 
             expect(page.locator("body")).to_contain_text("FANG HR Co-pilot")
