@@ -1698,12 +1698,20 @@ def _render_jobposting_agent_tool_message(tool_call: dict, step_idx: int) -> Non
         # Result (nested expander, scrollable container)
         with st.expander("📤 Kết quả lệnh", expanded=False):
             with st.container(height=300):
-                # Raw content (history tool rows) or result summary
-                content = tool_call.get("content") or result_summary
+                # Prefer sanitized backend preview. History rows may store it under
+                # content.preview because tool_result messages persist JSON metadata.
+                content = (
+                    tool_call.get("resultPreview")
+                    or tool_call.get("resultData")
+                    or tool_call.get("content")
+                    or result_summary
+                )
                 if content:
                     try:
                         if isinstance(content, str):
                             content = _json.loads(content)
+                        if isinstance(content, dict) and content.get("preview"):
+                            content = content["preview"]
                         st.json(content)
                     except Exception:
                         st.code(str(content))
