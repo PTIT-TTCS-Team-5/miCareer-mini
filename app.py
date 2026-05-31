@@ -931,7 +931,7 @@ def page_hr_applications():
                         f"— Nộp: {a['appliedat'].strftime('%Y-%m-%d') if a['appliedat'] else 'N/A'}"
                     )
                 with col2:
-                    if st.button("Đánh giá RAG", key=f"app_{a['jobappid']}"):
+                    if st.button("Đánh giá CV", key=f"app_{a['jobappid']}"):
                         st.session_state.selected_app_id = a["jobappid"]
                         st.session_state.conversation_id = None
                         go("hr_app_detail")
@@ -1619,16 +1619,6 @@ _TOOL_DISPLAY_NAMES: dict[str, str] = {
     "count_job_applications": "Đếm ứng viên",
 }
 
-# Quick prompts gợi ý
-_QUICK_PROMPTS = [
-    "Liệt kê top 10 ứng viên phù hợp nhất cho job này, nêu lý do ngắn gọn.",
-    "Trong nhóm này, lọc ứng viên có tiếng Anh Advanced trở lên.",
-    "So sánh 3 ứng viên nổi bật nhất trong nhóm hiện tại.",
-    "Ứng viên nào có kinh nghiệm backend + AI tốt nhất?",
-    "Đếm số ứng viên theo trạng thái tuyển dụng hiện tại.",
-    "Gợi ý shortlist 5 ứng viên nên phỏng vấn trước.",
-]
-
 # HTTP status → Vietnamese message
 _HTTP_ERROR_MESSAGES: dict[int, str] = {
     400: "Yêu cầu không hợp lệ. Vui lòng kiểm tra nội dung nhập.",
@@ -1704,26 +1694,53 @@ def _render_jobposting_agent_tool_message(tool_call: dict, step_idx: int) -> Non
                 st.json(args)
             except Exception:
                 st.code(str(args))
-        # Result summary
-        if result_summary:
-            st.markdown(f"**Kết quả:** {result_summary}")
-        # Raw content (history tool rows)
-        content = tool_call.get("content")
-        if content and not result_summary:
-            try:
-                if isinstance(content, str):
-                    content = _json.loads(content)
-                st.json(content)
-            except Exception:
-                st.code(str(content))
+
+        # Result (nested expander, scrollable container)
+        with st.expander("📤 Kết quả lệnh", expanded=False):
+            with st.container(height=300):
+                # Raw content (history tool rows) or result summary
+                content = tool_call.get("content") or result_summary
+                if content:
+                    try:
+                        if isinstance(content, str):
+                            content = _json.loads(content)
+                        st.json(content)
+                    except Exception:
+                        st.code(str(content))
+                else:
+                    st.caption("Không có kết quả chi tiết.")
+
         if error_msg:
             st.error(f"❌ {error_msg}")
 
 
 def _render_jobposting_agent_messages(messages: list[dict]) -> None:
-    """Render danh sách messages: user/assistant bubbles + tool expanders."""
+    """Render danh sách messages hoặc Welcome screen nếu chưa có tin nhắn."""
+    is_loading = st.session_state.jobposting_agent_is_loading
     if not messages:
-        st.info("Hội thoại mới — hãy hỏi về ứng viên của job này.")
+        # Render FANG Welcome Empty State
+        st.markdown("### Xin chào, mình là FANG 👋")
+        st.markdown(
+            "Mình là trợ lý AI dành cho HR, được tích hợp để có thể hỗ trợ bạn sàng lọc, tìm kiếm và so sánh để tìm ra những ứng viên phù hợp nhất cho công việc này."
+        )
+        st.markdown("Bạn có thể thử hỏi mình một câu hỏi và mình sẽ hỗ trợ nhé:")
+
+        # 3 suggested prompts
+        prompts = [
+            "Xếp hạng 10 ứng viên phù hợp nhất.",
+            "Những ứng viên nào có chứng chỉ tiếng Anh TOEIC từ 600 trở lên?",
+            "So sánh 3 ứng viên nổi bật nhất.",
+        ]
+
+        for idx, p in enumerate(prompts):
+            if st.button(
+                p,
+                key=f"welcome_prompt_{idx}",
+                disabled=is_loading,
+                use_container_width=True,
+            ):
+                st.session_state.jobposting_agent_pending_prompt = p
+                st.rerun()
         return
 
     tool_step = 0
@@ -1757,11 +1774,7 @@ def _render_jobposting_agent_working_set(
     working_set: dict | None,
     source_job_app_ids: list[int],
 ) -> None:
-    """Render working set panel + source chips sau assistant response.
-
-    FE-3: dùng db.get_application_summaries_by_ids để hiển thị tên/trạng thái
-    thay vì chỉ ID thô. Defensive fallback về raw ID nếu DB lookup thất bại.
-    """
+    """Render working set panel + source chips sau assistant response."""
     MAX_CHIPS = 25
 
     def _make_chip_label(jaid: int, summary_map: dict) -> str:
@@ -1771,6 +1784,12 @@ def _render_jobposting_agent_working_set(
             stat = s.get("stat", "")
             return f"{name} [{stat}]" if stat else (name or f"#{jaid}")
         return f"#{jaid}"
+
+    # Determine if working set and source are identical
+    working_set_ids = working_set.get("jobAppIds") or [] if working_set else []
+    show_source = bool(source_job_app_ids)
+    if show_source and set(source_job_app_ids) == set(working_set_ids):
+        show_source = False
 
     if working_set:
         label = working_set.get("label") or "Tập ứng viên hiện tại"
@@ -1787,19 +1806,14 @@ def _render_jobposting_agent_working_set(
             except Exception:
                 pass  # fallback to raw IDs
 
-        with st.container(border=True):
-            col_l, col_r = st.columns([3, 1])
-            with col_l:
-                st.markdown(f"**📋 {label}**")
-            with col_r:
-                st.metric("Ứng viên", len(job_app_ids))
-
+        ws_expander_label = f"📋 {label} — {len(job_app_ids)} ứng viên"
+        with st.expander(ws_expander_label, expanded=False):
             # Active filter chips
             if filters:
                 filter_parts = [f"`{k}={v}`" for k, v in filters.items()]
                 st.markdown(" ".join(filter_parts))
 
-            # JobApp chips — mỗi chip hiện tên nếu biết, không thì dùng ID
+            # JobApp chips
             overflow = len(job_app_ids) - MAX_CHIPS
             if visible_ids:
                 n_cols = min(len(visible_ids), 4)
@@ -1819,8 +1833,8 @@ def _render_jobposting_agent_working_set(
             if overflow > 0:
                 st.caption(f"+{overflow} ứng viên khác")
 
-    # Source chips — riêng biệt với working set
-    if source_job_app_ids:
+    # Source chips — riêng biệt và chỉ hiển thị khi có sự khác biệt
+    if show_source:
         src_visible = source_job_app_ids[:MAX_CHIPS]
         src_summary_map: dict = {}
         try:
@@ -1829,8 +1843,7 @@ def _render_jobposting_agent_working_set(
         except Exception:
             pass
 
-        with st.container(border=True):
-            st.markdown("**🔗 Nguồn được trích dẫn trong câu trả lời**")
+        with st.expander("🔗 Nguồn được trích dẫn trong câu trả lời", expanded=False):
             src_overflow = len(source_job_app_ids) - MAX_CHIPS
             n_cols = min(len(src_visible), 4)
             src_cols = st.columns(n_cols)
@@ -1850,8 +1863,10 @@ def _render_jobposting_agent_working_set(
                 st.caption(f"+{src_overflow} nguồn khác")
 
 
-def _render_jobposting_agent_sidebar(job_id: int, hr_id: int) -> None:
-    """Render cột trái: conversation list, new/rename/archive, quick prompts."""
+def _render_jobposting_agent_sidebar(
+    job_id: int, hr_id: int, job_obj: dict | None = None
+) -> None:
+    """Render cột trái: conversation list, new/rename/archive, job posting details."""
     is_loading = st.session_state.jobposting_agent_is_loading
 
     # --- New conversation button ---
@@ -1970,20 +1985,80 @@ def _render_jobposting_agent_sidebar(job_id: int, hr_id: int) -> None:
             except Exception as e:
                 st.error(_jobposting_agent_error_message(e))
 
-    st.divider()
+    # --- Job Posting Detail ---
+    if job_obj:
+        st.divider()
+        with st.expander("📄 Job Posting", expanded=False):
+            st.markdown(f"### {job_obj.get('title', '')}")
+            if job_obj.get("compname"):
+                st.write(f"🏢 **Công ty:** {job_obj['compname']}")
 
-    # --- Quick Prompts ---
-    st.markdown("**Câu hỏi nhanh**")
-    for i, qp in enumerate(_QUICK_PROMPTS):
-        if st.button(
-            qp[:55] + ("…" if len(qp) > 55 else ""),
-            key=f"jp_qp_{i}",
-            use_container_width=True,
-            disabled=is_loading,
-            help=qp,
-        ):
-            st.session_state.jobposting_agent_pending_prompt = qp
-            st.rerun()
+            # Format expiry date if exists
+            expat = job_obj.get("expat")
+            if expat:
+                try:
+                    expat_str = expat.strftime("%Y-%m-%d")
+                except Exception:
+                    expat_str = str(expat)
+                st.write(f"📅 **Hết hạn:** {expat_str}")
+
+            # App count
+            try:
+                apps = db.get_applications_for_job(job_id)
+                st.write(f"👥 **Số ứng viên:** {len(apps)}")
+            except Exception:
+                pass
+
+            if job_obj.get("location"):
+                st.write(f"📍 **Địa điểm:** {job_obj['location']}")
+            if job_obj.get("workMode"):
+                st.write(f"💼 **Hình thức:** {job_obj['workMode']}")
+
+            salary_min = job_obj.get("minSalary")
+            salary_max = job_obj.get("maxSalary")
+            if salary_min is not None or salary_max is not None:
+                st.write(
+                    f"💰 **Lương:** {salary_min or 0} - {salary_max or 'Thỏa thuận'}"
+                )
+
+            # Get detail from nmaiex if available
+            try:
+                from core import nmaiex
+
+                job_detail = nmaiex.get_job_detail(job_id)
+                if job_detail:
+                    if job_detail.get("requiredLevel"):
+                        st.write(f"🎓 **Yêu cầu level:** {job_detail['requiredLevel']}")
+                    if job_detail.get("categories"):
+                        st.write(
+                            f"📁 **Ngành nghề:** {', '.join(job_detail['categories'])}"
+                        )
+                    if job_detail.get("skills"):
+                        st.write(f"🛠️ **Kỹ năng:** {', '.join(job_detail['skills'])}")
+            except Exception:
+                pass
+
+            # Actions
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button(
+                    "✏️ Sửa Job", key="side_edit_job", use_container_width=True
+                ):
+                    st.session_state.hr_edit_job_id = job_id
+                    go("hr_job_edit")
+            with col2:
+                if st.button(
+                    "👥 Xem ứng viên", key="side_view_apps", use_container_width=True
+                ):
+                    st.session_state.selected_job_id = job_id
+                    go("hr_applications")
+
+            # Description (scrollable)
+            desc = job_obj.get("description", "")
+            if desc:
+                st.markdown("**Mô tả công việc:**")
+                with st.container(height=350):
+                    st.write(desc)
 
 
 def page_hr_job_agent() -> None:
@@ -2028,7 +2103,11 @@ def page_hr_job_agent() -> None:
         if job.get("compname"):
             meta_parts.append(f"🏢 {job['compname']}")
         if job.get("expat"):
-            meta_parts.append(f"📅 Hết hạn: {job['expat']}")
+            try:
+                expat_str = job["expat"].strftime("%Y-%m-%d")
+            except Exception:
+                expat_str = str(job["expat"])
+            meta_parts.append(f"📅 Hết hạn: {expat_str}")
         # Count applications
         apps = db.get_applications_for_job(job_id)
         meta_parts.append(f"👥 {len(apps)} ứng viên")
@@ -2041,7 +2120,7 @@ def page_hr_job_agent() -> None:
 
     # ── Cột trái: sidebar ──
     with col_left:
-        _render_jobposting_agent_sidebar(job_id, hr_id)
+        _render_jobposting_agent_sidebar(job_id, hr_id, job)
 
     # ── Cột phải: chat ──
     with col_right:
@@ -2084,7 +2163,7 @@ def page_hr_job_agent() -> None:
             prompt = prompt_from_quick
         else:
             prompt = st.chat_input(
-                "Hỏi về ứng viên của job này...",
+                "Tìm nhanh ứng viên sáng giá cùng FANG.",
                 key="jp_chat_input",
                 disabled=is_loading,
             )
