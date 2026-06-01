@@ -2186,14 +2186,54 @@ def page_hr_job_agent() -> None:
             st.session_state.jobposting_agent_error = None
             st.session_state.jobposting_agent_warnings = []
 
-            with st.spinner("FANG Job Agent đang phân tích ứng viên và gọi công cụ..."):
+            placeholder = st.empty()
+            if True:
                 try:
-                    result = fang_client.jobposting_agent_query(
+                    import concurrent.futures
+                    import time
+
+                    executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+                    future = executor.submit(
+                        fang_client.jobposting_agent_query,
                         job_post_id=job_id,
                         hr_id=hr_id,
                         prompt=prompt,
                         conversation_id=st.session_state.jobposting_agent_conversation_id,
                     )
+
+                    start_time = time.time()
+                    loading_messages = [
+                        "Đợi FANG một chút nha...",
+                        "FANG đang tìm thông tin để trả lời, bạn chờ chút nhé...",
+                        "FANG đang xử lý câu hỏi của bạn...",
+                        "Chờ FANG vài giây nhé...",
+                        "FANG đang chuẩn bị câu trả lời...",
+                        "Sẽ xong nhanh thôi, FANG đang vào việc...",
+                        "Một chút nữa thôi, FANG sắp xong rồi...",
+                        "FANG đang tra cứu thêm thông tin...",
+                        "Việc gì khó, để FANG lo...",
+                        "FANG sắp có câu trả lời rồi...",
+                    ]
+
+                    while not future.done():
+                        elapsed = time.time() - start_time
+                        if elapsed < 3.6:
+                            current_msg = loading_messages[0]
+                        else:
+                            if elapsed < 45.0:
+                                allowed_pool = loading_messages[1:9]
+                            else:
+                                allowed_pool = loading_messages[1:10]
+                            interval_count = int((elapsed - 3.6) // 3.6)
+                            current_msg = allowed_pool[
+                                interval_count % len(allowed_pool)
+                            ]
+
+                        placeholder.markdown(f"⏳ **{current_msg}**")
+                        time.sleep(0.5)
+
+                    placeholder.empty()
+                    result = future.result()
 
                     # Update conversation state
                     new_conv_id = str(result.get("conversationId", ""))
