@@ -10,7 +10,7 @@ import time
 
 from playwright.sync_api import Page, expect, sync_playwright
 
-FRONTEND_URL = "http://localhost:8501"
+FRONTEND_URL = "http://127.0.0.1:8501"
 HR_USERNAME = "hr_microshop"
 HR_PASSWORD = "1"
 TARGET_JOB_TITLE = "Junior Frontend Developer (ReactJS)"
@@ -34,6 +34,7 @@ def target_job_block(page: Page):
     return (
         page.locator("[data-testid='stVerticalBlock']")
         .filter(has_text=TARGET_JOB_TITLE)
+        .filter(has=page.locator("button:has-text('Agent')"))
         .last
     )
 
@@ -336,6 +337,15 @@ def run_test_suite():
         # ---------------------------------------------------------------------------
         try:
             print("\n[STEP] TC08 — Click candidate chip and verify navigation...")
+            # Click expander first to make chips visible
+            expander = page.locator("details summary:has-text('📋')").first
+            if expander.is_visible():
+                expander.click()
+                wait_streamlit(page, 1000)
+            elif page.locator("details summary:has-text('Nguồn')").first.is_visible():
+                page.locator("details summary:has-text('Nguồn')").first.click()
+                wait_streamlit(page, 1000)
+
             # Target any applicant chip containing status brackets e.g. [PENDING], [NEW], etc.
             candidate_chip = page.locator("button:has-text('[')").first
             candidate_name = candidate_chip.inner_text().split("[")[0].strip()
@@ -441,9 +451,7 @@ def run_test_suite():
             wait_streamlit(page, 2000)
 
             # Verify empty state text
-            expect(page.locator("body")).to_contain_text(
-                "Hội thoại mới — hãy hỏi về ứng viên"
-            )
+            expect(page.locator("body")).to_contain_text("Xin chào, mình là FANG")
             expect(page.locator("body")).not_to_contain_text("Tập ứng viên hiện tại")
             log_result(
                 "TC10",

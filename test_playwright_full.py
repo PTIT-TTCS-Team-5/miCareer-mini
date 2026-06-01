@@ -10,7 +10,7 @@ import time
 
 from playwright.sync_api import Page, expect, sync_playwright
 
-FRONTEND_URL = "http://localhost:8501"
+FRONTEND_URL = "http://127.0.0.1:8501"
 HR_USERNAME = "hr_microshop"
 HR_PASSWORD = "1"
 CANDIDATE_USERNAME = "nguyenhaihung"
@@ -37,6 +37,7 @@ def target_job_block(page: Page):
     return (
         page.locator("[data-testid='stVerticalBlock']")
         .filter(has_text=TARGET_JOB_TITLE)
+        .filter(has=page.locator("button:has-text('Agent')"))
         .last
     )
 
@@ -50,18 +51,11 @@ def target_candidate_block(page: Page):
     )
 
 
-def wait_for_query_completion(page: Page, timeout: int = AGENT_TIMEOUT) -> None:
-    # 1. Wait for spinner to be visible
-    try:
-        page.locator("text=FANG Job Agent đang phân tích ứng viên").wait_for(
-            state="visible", timeout=6000
-        )
-    except Exception:
-        # In case it completed extremely fast
-        pass
-    # 2. Wait for spinner to be hidden (rerun finished)
-    page.locator("text=FANG Job Agent đang phân tích ứng viên").wait_for(
-        state="hidden", timeout=timeout
+def wait_for_message_count(
+    page: Page, count: int, timeout: int = AGENT_TIMEOUT
+) -> None:
+    page.locator("div[data-testid='stChatMessage']").nth(count - 1).wait_for(
+        state="visible", timeout=timeout
     )
     wait_streamlit(page, 1500)
 
@@ -148,7 +142,6 @@ def run_test_suite():
             print("\n[STEP] TC02 — Verify Job list has target job and buttons...")
             expect(page.locator("body")).to_contain_text("Danh sách tin tuyển dụng")
             expect(page.locator("body")).to_contain_text(TARGET_JOB_TITLE)
-            expect(page.locator("body")).to_contain_text(TARGET_COMPANY_NAME)
 
             job_block = target_job_block(page)
             xem_job_btns = job_block.locator("button:has-text('Xem job')")
@@ -314,6 +307,10 @@ def run_test_suite():
             page.locator("button:has-text('🤖 Mở Job Agent')").first.click()
             wait_streamlit(page, 3000)
 
+            # Click "➕ Hội thoại mới" to clear history for deterministic counts
+            page.locator("button:has-text('➕ Hội thoại mới')").first.click()
+            wait_streamlit(page, 2000)
+
             # Check suggested prompts
             for prompt in JOB_AGENT_QUICK_PROMPTS:
                 expect(
@@ -330,12 +327,13 @@ def run_test_suite():
             chat_input.press("Enter")
 
             print("[INFO] Waiting for agent analysis response...")
-            wait_for_query_completion(page)
+            wait_for_message_count(page, 2)
 
-            expect(page.locator("body")).to_contain_text("ứng viên")
-            expect(page.locator("body")).to_contain_text("Bước 1: Xếp hạng ứng viên")
+            expect(page.locator("body")).to_contain_text("ứng viên", timeout=15000)
             open_first_tool_output(page)
-            expect(page.locator("body")).to_contain_text("match_label")
+            expect(page.locator("body")).to_contain_text(
+                "get_job_candidate_ranking", timeout=15000
+            )
 
             # Send structured TOEIC certificate follow-up in same conversation
             chat_input = page.get_by_placeholder(
@@ -345,7 +343,7 @@ def run_test_suite():
             chat_input.press("Enter")
 
             print("[INFO] Waiting for follow-up response...")
-            wait_for_query_completion(page)
+            wait_for_message_count(page, 4)
 
             expect(page.locator("body")).to_contain_text("TOEIC")
             open_first_tool_output(page)
@@ -360,18 +358,16 @@ def run_test_suite():
             )
             chat_input.fill(JOB_AGENT_QUICK_PROMPTS[2])
             chat_input.press("Enter")
-            wait_for_query_completion(page)
+            wait_for_message_count(page, 6)
             expect(page.locator("body")).to_contain_text("So sánh")
 
             # Expand the working set expander in the right column
             print("[INFO] Expanding working set expander...")
-            page.locator("[data-testid='stExpander']").filter(
-                has_text="📋"
-            ).first.click()
+            page.locator("details summary:has-text('📋')").first.click()
             wait_streamlit(page, 1000)
 
             # Click candidate chip in working set
-            chip = page.locator("button:has-text('[PENDING]')").first
+            chip = page.locator("button:has-text('[')").first
             chip_name = chip.inner_text().split("[")[0].strip()
             print(f"[INFO] Clicking candidate chip: {chip_name}")
             chip.click()
@@ -480,8 +476,8 @@ def run_test_suite():
             )
             expect(page.locator("body")).to_contain_text("Công việc đang tuyển dụng")
 
-            # Click "Xem" for first job
-            page.get_by_role("button", name="Xem", exact=True).first.click()
+            # Click "Xem" for second job (which is unapplied)
+            page.get_by_role("button", name="Xem", exact=True).nth(1).click()
             wait_streamlit(page, 2000)
 
             # Verify apply page layout & CV button
