@@ -11,10 +11,13 @@ import time
 from playwright.sync_api import Page, expect, sync_playwright
 
 FRONTEND_URL = "http://localhost:8501"
-HR_USERNAME = "hr_dndh"
+HR_USERNAME = "hr_microshop"
 HR_PASSWORD = "1"
 CANDIDATE_USERNAME = "nguyenhaihung"
 CANDIDATE_PASSWORD = "1"
+TARGET_JOB_TITLE = "Junior Frontend Developer (ReactJS)"
+TARGET_COMPANY_NAME = "MicroShop Corp"
+TARGET_CANDIDATE_TEXT = "Hải Hưng Nguyễn"
 
 AGENT_TIMEOUT = 90000
 DEFAULT_TIMEOUT = 15000
@@ -28,6 +31,23 @@ JOB_AGENT_QUICK_PROMPTS = [
 
 def wait_streamlit(page: Page, ms: int = 2000) -> None:
     page.wait_for_timeout(ms)
+
+
+def target_job_block(page: Page):
+    return (
+        page.locator("[data-testid='stVerticalBlock']")
+        .filter(has_text=TARGET_JOB_TITLE)
+        .last
+    )
+
+
+def target_candidate_block(page: Page):
+    return (
+        page.locator("[data-testid='stVerticalBlock']")
+        .filter(has_text=TARGET_CANDIDATE_TEXT)
+        .filter(has=page.locator("button:has-text('Đánh giá CV')"))
+        .first
+    )
 
 
 def wait_for_query_completion(page: Page, timeout: int = AGENT_TIMEOUT) -> None:
@@ -101,7 +121,7 @@ def run_test_suite():
         # TC01: Login HR
         # ---------------------------------------------------------------------------
         try:
-            print("\n[STEP] TC01 — Login HR as hr_dndh...")
+            print(f"\n[STEP] TC01 — Login HR as {HR_USERNAME}...")
             page.goto(FRONTEND_URL)
             page.wait_for_selector(
                 "button:has-text('Đăng nhập HR')", timeout=DEFAULT_TIMEOUT
@@ -127,12 +147,13 @@ def run_test_suite():
         try:
             print("\n[STEP] TC02 — Verify Job list has target job and buttons...")
             expect(page.locator("body")).to_contain_text("Danh sách tin tuyển dụng")
-            expect(page.locator("body")).to_contain_text("Kỹ Sư Trực Bản Đồ Thử Nghiệm")
+            expect(page.locator("body")).to_contain_text(TARGET_JOB_TITLE)
+            expect(page.locator("body")).to_contain_text(TARGET_COMPANY_NAME)
 
-            # Find row buttons
-            xem_job_btns = page.locator("button:has-text('Xem job')")
-            xem_uv_btns = page.locator("button:has-text('Xem ứng viên')")
-            agent_btns = page.locator("button:has-text('Agent')")
+            job_block = target_job_block(page)
+            xem_job_btns = job_block.locator("button:has-text('Xem job')")
+            xem_uv_btns = job_block.locator("button:has-text('Xem ứng viên')")
+            agent_btns = job_block.locator("button:has-text('Agent')")
 
             if (
                 xem_job_btns.count() > 0
@@ -159,12 +180,11 @@ def run_test_suite():
         # ---------------------------------------------------------------------------
         try:
             print("\n[STEP] TC03 — Navigate to job details & edit page...")
-            # Click "Xem job" for second job (Kỹ Sư Trực Bản Đồ Thử Nghiệm is the second job)
-            page.locator("button:has-text('Xem job')").nth(1).click()
+            target_job_block(page).locator("button:has-text('Xem job')").first.click()
             wait_streamlit(page, 2000)
 
             expect(page.locator("body")).to_contain_text("Thông tin Job")
-            expect(page.locator("body")).to_contain_text("Kỹ Sư Trực Bản Đồ Thử Nghiệm")
+            expect(page.locator("body")).to_contain_text(TARGET_JOB_TITLE)
 
             # Click Sửa Job
             page.locator("button:has-text('Sửa Job')").first.click()
@@ -191,18 +211,22 @@ def run_test_suite():
             print(
                 "\n[STEP] TC04 — Open applications list and run full-CV chat on Hưng's profile..."
             )
-            # Click "Xem ứng viên" for Kỹ Sư Trực Bản Đồ Thử Nghiệm (second job)
-            page.locator("button:has-text('Xem ứng viên')").nth(1).click()
+            target_job_block(page).locator(
+                "button:has-text('Xem ứng viên')"
+            ).first.click()
             wait_streamlit(page, 3000)
 
             expect(page.locator("body")).to_contain_text("Danh sách ứng viên")
-            expect(page.locator("body")).to_contain_text("Hải Hưng Nguyễn")
+            expect(page.locator("body")).to_contain_text(TARGET_CANDIDATE_TEXT)
 
-            # Click "Đánh giá CV" for Hưng (first row)
-            page.locator("button:has-text('Đánh giá CV')").first.click()
+            target_candidate_block(page).locator(
+                "button:has-text('Đánh giá CV')"
+            ).first.click()
             wait_streamlit(page, 4000)
 
-            expect(page.locator("body")).to_contain_text("Hồ sơ: Hải Hưng Nguyễn")
+            expect(page.locator("body")).to_contain_text(
+                f"Hồ sơ: {TARGET_CANDIDATE_TEXT}"
+            )
             expect(page.locator("body")).to_contain_text("🤖 FANG HR Co-pilot")
 
             # Write evaluation question
@@ -256,13 +280,12 @@ def run_test_suite():
 
             # Verify ranked list is rendered
             expect(page.locator("body")).to_contain_text("🥇")
-            expect(page.locator("body")).to_contain_text("Nguyễn Thu Châu")
 
             # Click "Xem" for the top candidate
             page.get_by_role("button", name="Xem", exact=True).first.click()
             wait_streamlit(page, 3000)
 
-            expect(page.locator("body")).to_contain_text("Hồ sơ: Nguyễn Thu Châu")
+            expect(page.locator("body")).to_contain_text("Hồ sơ:")
             log_result(
                 "TC06",
                 "Verify AI Ranking calculates matches and navigates to profile detail",

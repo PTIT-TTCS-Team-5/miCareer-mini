@@ -11,8 +11,10 @@ import time
 from playwright.sync_api import Page, expect, sync_playwright
 
 FRONTEND_URL = "http://localhost:8501"
-HR_USERNAME = "hr_helios"
+HR_USERNAME = "hr_microshop"
 HR_PASSWORD = "1"
+TARGET_JOB_TITLE = "Junior Frontend Developer (ReactJS)"
+TARGET_COMPANY_NAME = "MicroShop Corp"
 AGENT_TIMEOUT = 90000
 DEFAULT_TIMEOUT = 15000
 SLOW_MO = 500
@@ -26,6 +28,14 @@ _QUICK_PROMPTS = [
 
 def wait_streamlit(page: Page, ms: int = 1500) -> None:
     page.wait_for_timeout(ms)
+
+
+def target_job_block(page: Page):
+    return (
+        page.locator("[data-testid='stVerticalBlock']")
+        .filter(has_text=TARGET_JOB_TITLE)
+        .last
+    )
 
 
 def get_conversation_buttons(page: Page):
@@ -119,7 +129,8 @@ def run_test_suite():
         try:
             print("\n[STEP] TC02 — Verify Job list has Agent button...")
             expect(page.locator("body")).to_contain_text("Danh sách tin tuyển dụng")
-            agent_buttons = page.locator("button:has-text('Agent')")
+            expect(page.locator("body")).to_contain_text(TARGET_JOB_TITLE)
+            agent_buttons = target_job_block(page).locator("button:has-text('Agent')")
             count = agent_buttons.count()
             if count > 0:
                 log_result(
@@ -140,13 +151,14 @@ def run_test_suite():
         # ---------------------------------------------------------------------------
         try:
             print("\n[STEP] TC03 — Navigate to Job Agent...")
-            page.locator("button:has-text('Agent')").first.click()
+            target_job_block(page).locator("button:has-text('Agent')").first.click()
             wait_streamlit(page, 2500)
 
             expect(page.locator("body")).to_contain_text("Job Agent:")
 
             # Verify context metadata & layout
-            expect(page.locator("body")).to_contain_text("Helios Software")
+            expect(page.locator("body")).to_contain_text(TARGET_JOB_TITLE)
+            expect(page.locator("body")).to_contain_text(TARGET_COMPANY_NAME)
             expect(page.locator("body")).to_contain_text("Hết hạn:")
 
             # Verify basic elements
@@ -368,8 +380,8 @@ def run_test_suite():
                 page.locator("button:has-text('← Quay lại')").first.click()
                 wait_streamlit(page, 2000)
 
-            # Click Agent again to open Job Agent
-            page.locator("button:has-text('Agent')").first.click()
+            # Click Agent again to open the target job's Agent
+            target_job_block(page).locator("button:has-text('Agent')").first.click()
             wait_streamlit(page, 2500)
 
             # Select the active conversation to rename (first conversation button)
