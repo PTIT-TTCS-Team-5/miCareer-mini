@@ -14,8 +14,8 @@
       "Playwright"
     ],
     "description": "Thin Streamlit frontend for HR and candidate recruitment workflows that delegates AI-heavy processing, ranking, and chat behavior to FANG.",
-    "analyzedAt": "2026-05-27T06:32:07.715526+00:00",
-    "gitCommitHash": "76bb27e7b53472efff192df8be7e2d80c0b8dded"
+    "analyzedAt": "2026-06-08T14:36:01.290Z",
+    "gitCommitHash": "c3ddf43beee972bf67bff49cb54be81209dfae22"
   },
   "nodes": [
     {
@@ -23,14 +23,16 @@
       "type": "file",
       "name": "app.py",
       "filePath": "app.py",
-      "summary": "Streamlit entrypoint that initializes session state, renders HR and candidate pages, and orchestrates calls to the database, FANG APIs, NMAIex APIs, and Cloudinary upload flow.",
+      "summary": "Streamlit entrypoint for HR and candidate workflows, now with sanitized Job Agent tool previews and an async loading loop while delegating chat, ranking, profile, and upload operations to FANG, NMAIex, and Cloudinary.",
       "tags": [
         "streamlit",
         "ui",
         "routing",
         "hr-flow",
-        "candidate-flow"
-      ]
+        "candidate-flow",
+        "job-agent"
+      ],
+      "complexity": "complex"
     },
     {
       "id": "file:core/cloudinary_upload.py",
@@ -42,7 +44,8 @@
         "cloudinary",
         "cv-upload",
         "integration"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "file:core/db.py",
@@ -55,7 +58,8 @@
         "database",
         "queries",
         "data-access"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "file:core/fang_client.py",
@@ -68,7 +72,8 @@
         "fang",
         "rag",
         "ingestion"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "file:core/nmaiex_client.py",
@@ -81,7 +86,8 @@
         "nmaiex",
         "ranking",
         "master-data"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "file:test_playwright.py",
@@ -93,7 +99,8 @@
         "playwright",
         "smoke-test",
         "ui-test"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "config:.env.example",
@@ -105,7 +112,8 @@
         "environment",
         "configuration",
         "secrets-template"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "config:.gitleaks.toml",
@@ -117,7 +125,8 @@
         "security",
         "configuration",
         "secret-scanning"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "config:.pre-commit-config.yaml",
@@ -129,7 +138,8 @@
         "tooling",
         "quality",
         "automation"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "config:.understand-anything/.understandignore",
@@ -141,7 +151,8 @@
         "analysis",
         "tooling",
         "configuration"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "config:requirements.txt",
@@ -153,7 +164,8 @@
         "python",
         "dependencies",
         "configuration"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "document:README.md",
@@ -165,7 +177,8 @@
         "overview",
         "documentation",
         "onboarding"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "document:agent_workflow_doc/implementation_plan.md",
@@ -177,7 +190,8 @@
         "architecture",
         "planning",
         "integration"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "document:docs/archive/hr_guide_v1.md",
@@ -189,7 +203,8 @@
         "archive",
         "hr",
         "documentation"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "document:docs/archive/rag_strategy_v1.md",
@@ -201,7 +216,8 @@
         "archive",
         "rag",
         "strategy"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "document:docs/candidate_apply_guide.md",
@@ -213,7 +229,8 @@
         "candidate-flow",
         "operations",
         "documentation"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "document:docs/candidate_apply_strategy.md",
@@ -225,209 +242,300 @@
         "candidate-flow",
         "architecture",
         "strategy"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:app.py:_ensure_master_data",
       "type": "function",
       "name": "_ensure_master_data",
       "filePath": "app.py",
-      "summary": "Load master data một lần rồi cache vào session_state.",
+      "lineRange": [
+        79,
+        87
+      ],
+      "summary": "Streamlit page helper for  ensure master data.",
       "tags": [
         "session-cache",
         "streamlit"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:app.py:go",
       "type": "function",
       "name": "go",
       "filePath": "app.py",
-      "summary": "Update the current Streamlit page and trigger a rerun.",
+      "lineRange": [
+        95,
+        97
+      ],
+      "summary": "Streamlit page helper for go.",
       "tags": [
         "navigation",
         "streamlit"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:app.py:page_home",
       "type": "function",
       "name": "page_home",
       "filePath": "app.py",
-      "summary": "Render the Streamlit page for home.",
+      "lineRange": [
+        120,
+        139
+      ],
+      "summary": "Streamlit page helper for page home.",
       "tags": [
         "streamlit"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:app.py:page_login_hr",
       "type": "function",
       "name": "page_login_hr",
       "filePath": "app.py",
-      "summary": "Render the Streamlit page for login hr.",
+      "lineRange": [
+        147,
+        163
+      ],
+      "summary": "Streamlit page helper for page login hr.",
       "tags": [
         "authentication",
         "hr-flow",
         "streamlit"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:app.py:page_hr_jobs",
       "type": "function",
       "name": "page_hr_jobs",
       "filePath": "app.py",
-      "summary": "Render the Streamlit page for hr jobs.",
+      "lineRange": [
+        166,
+        210
+      ],
+      "summary": "Streamlit page helper for page hr jobs.",
       "tags": [
         "hr-flow",
         "streamlit"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:app.py:page_hr_job_view",
       "type": "function",
       "name": "page_hr_job_view",
       "filePath": "app.py",
-      "summary": "Trang xem chi tiết job của HR.",
+      "lineRange": [
+        213,
+        273
+      ],
+      "summary": "Streamlit page helper for page hr job view.",
       "tags": [
         "hr-flow",
         "streamlit"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:app.py:page_hr_job_edit",
       "type": "function",
       "name": "page_hr_job_edit",
       "filePath": "app.py",
-      "summary": "Phase 1.5 — Form sửa Job Posting với 2 nút Save tách biệt.",
+      "lineRange": [
+        276,
+        524
+      ],
+      "summary": "Streamlit page helper for page hr job edit.",
       "tags": [
         "hr-flow",
         "streamlit"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:app.py:_render_score_badge",
       "type": "function",
       "name": "_render_score_badge",
       "filePath": "app.py",
-      "summary": "Dev Mode: hiển thị score_breakdown chi tiết bên dưới mỗi card kết quả ranking.",
+      "lineRange": [
+        527,
+        548
+      ],
+      "summary": "Streamlit page helper for  render score badge.",
       "tags": [
         "streamlit"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:app.py:_render_hr_ranking_tab",
       "type": "function",
       "name": "_render_hr_ranking_tab",
       "filePath": "app.py",
-      "summary": "Nội dung tab AI Ranking trong trang Danh sách Ứng viên (Phase 3).",
+      "lineRange": [
+        551,
+        708
+      ],
+      "summary": "Streamlit page helper for  render hr ranking tab.",
       "tags": [
         "hr-flow",
         "ranking",
         "streamlit"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:app.py:page_hr_ai_ranking",
       "type": "function",
       "name": "page_hr_ai_ranking",
       "filePath": "app.py",
-      "summary": "Phase 3 — Trang AI Ranking riêng (truy cập từ nút trong danh sách Job).",
+      "lineRange": [
+        711,
+        734
+      ],
+      "summary": "Streamlit page helper for page hr ai ranking.",
       "tags": [
         "hr-flow",
         "ranking",
         "streamlit"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:app.py:page_hr_applications",
       "type": "function",
       "name": "page_hr_applications",
       "filePath": "app.py",
-      "summary": "Render the Streamlit page for hr applications.",
+      "lineRange": [
+        737,
+        937
+      ],
+      "summary": "Streamlit page helper for page hr applications.",
       "tags": [
         "hr-flow",
         "streamlit"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:app.py:page_hr_app_detail",
       "type": "function",
       "name": "page_hr_app_detail",
       "filePath": "app.py",
-      "summary": "Render the Streamlit page for hr app detail.",
+      "lineRange": [
+        940,
+        1118
+      ],
+      "summary": "Streamlit page helper for page hr app detail.",
       "tags": [
         "hr-flow",
         "streamlit"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:app.py:page_login_candidate",
       "type": "function",
       "name": "page_login_candidate",
       "filePath": "app.py",
-      "summary": "Render the Streamlit page for login candidate.",
+      "lineRange": [
+        1126,
+        1142
+      ],
+      "summary": "Streamlit page helper for page login candidate.",
       "tags": [
         "authentication",
         "candidate-flow",
         "streamlit"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:app.py:page_candidate_jobs",
       "type": "function",
       "name": "page_candidate_jobs",
       "filePath": "app.py",
-      "summary": "Render the Streamlit page for candidate jobs.",
+      "lineRange": [
+        1145,
+        1223
+      ],
+      "summary": "Streamlit page helper for page candidate jobs.",
       "tags": [
         "candidate-flow",
         "streamlit"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:app.py:_render_candidate_ai_jobs",
       "type": "function",
       "name": "_render_candidate_ai_jobs",
       "filePath": "app.py",
-      "summary": "Phase 3 — Section gợi ý công việc phù hợp cho ứng viên (C→J ranking).",
+      "lineRange": [
+        1226,
+        1359
+      ],
+      "summary": "Streamlit page helper for  render candidate ai jobs.",
       "tags": [
         "candidate-flow",
         "streamlit"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:app.py:page_candidate_job_detail",
       "type": "function",
       "name": "page_candidate_job_detail",
       "filePath": "app.py",
-      "summary": "Trang xem chi tiết job của ứng viên.",
+      "lineRange": [
+        1362,
+        1412
+      ],
+      "summary": "Streamlit page helper for page candidate job detail.",
       "tags": [
         "candidate-flow",
         "streamlit"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:app.py:page_candidate_profile",
       "type": "function",
       "name": "page_candidate_profile",
       "filePath": "app.py",
-      "summary": "Phase 1.5 — Trang hồ sơ của ứng viên: xem/sửa bio + upload CV mới.",
+      "lineRange": [
+        1415,
+        1496
+      ],
+      "summary": "Streamlit page helper for page candidate profile.",
       "tags": [
         "candidate-flow",
         "profile",
         "streamlit"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:app.py:page_candidate_apply",
       "type": "function",
       "name": "page_candidate_apply",
       "filePath": "app.py",
-      "summary": "Render the Streamlit page for candidate apply.",
+      "lineRange": [
+        1499,
+        1604
+      ],
+      "summary": "Streamlit page helper for page candidate apply.",
       "tags": [
         "apply-flow",
         "candidate-flow",
         "streamlit"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/cloudinary_upload.py:upload_cv_pdf",
@@ -438,7 +546,8 @@
       "tags": [
         "cloudinary",
         "upload"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/db.py:get_connection",
@@ -449,7 +558,8 @@
       "tags": [
         "database",
         "postgresql"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/db.py:get_hr_user",
@@ -460,7 +570,8 @@
       "tags": [
         "database",
         "postgresql"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/db.py:get_job_postings_by_company",
@@ -471,7 +582,8 @@
       "tags": [
         "database",
         "postgresql"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/db.py:get_applications_for_job",
@@ -482,7 +594,8 @@
       "tags": [
         "database",
         "postgresql"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/db.py:get_application_detail",
@@ -493,7 +606,8 @@
       "tags": [
         "database",
         "postgresql"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/db.py:get_application_by_job_and_candidate",
@@ -504,7 +618,8 @@
       "tags": [
         "database",
         "postgresql"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/db.py:get_ingestion_job_for_app",
@@ -515,7 +630,8 @@
       "tags": [
         "database",
         "postgresql"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/db.py:get_candidate_user",
@@ -526,7 +642,8 @@
       "tags": [
         "database",
         "postgresql"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/db.py:get_all_job_postings",
@@ -537,7 +654,8 @@
       "tags": [
         "database",
         "postgresql"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/db.py:get_job_posting_detail",
@@ -548,7 +666,8 @@
       "tags": [
         "database",
         "postgresql"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/db.py:get_candidate_existing_cv",
@@ -559,7 +678,8 @@
       "tags": [
         "database",
         "postgresql"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/db.py:has_applied",
@@ -570,7 +690,8 @@
       "tags": [
         "database",
         "postgresql"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/db.py:create_application",
@@ -581,7 +702,8 @@
       "tags": [
         "database",
         "postgresql"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/db.py:update_candidate_cv_url",
@@ -592,7 +714,8 @@
       "tags": [
         "database",
         "postgresql"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/db.py:get_candidate_bio_and_cv",
@@ -603,7 +726,8 @@
       "tags": [
         "database",
         "postgresql"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/fang_client.py:_post",
@@ -614,7 +738,8 @@
       "tags": [
         "fang",
         "rest-client"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/fang_client.py:_get",
@@ -625,7 +750,8 @@
       "tags": [
         "fang",
         "rest-client"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/fang_client.py:chat_query",
@@ -636,7 +762,8 @@
       "tags": [
         "fang",
         "rest-client"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/fang_client.py:list_conversations",
@@ -647,7 +774,8 @@
       "tags": [
         "fang",
         "rest-client"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/fang_client.py:get_conversation_messages",
@@ -658,7 +786,8 @@
       "tags": [
         "fang",
         "rest-client"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/fang_client.py:summarize_conversation",
@@ -669,7 +798,8 @@
       "tags": [
         "fang",
         "rest-client"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/fang_client.py:branch_new_conversation",
@@ -680,7 +810,8 @@
       "tags": [
         "fang",
         "rest-client"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/fang_client.py:trigger_ingestion",
@@ -691,7 +822,8 @@
       "tags": [
         "fang",
         "rest-client"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/fang_client.py:get_ingestion_status",
@@ -702,7 +834,8 @@
       "tags": [
         "fang",
         "rest-client"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/fang_client.py:poll_ingestion_until_done",
@@ -713,7 +846,8 @@
       "tags": [
         "fang",
         "rest-client"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/fang_client.py:health_check",
@@ -724,7 +858,8 @@
       "tags": [
         "fang",
         "rest-client"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/nmaiex_client.py:_get",
@@ -735,7 +870,8 @@
       "tags": [
         "nmaiex",
         "rest-client"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/nmaiex_client.py:_patch",
@@ -746,7 +882,8 @@
       "tags": [
         "nmaiex",
         "rest-client"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/nmaiex_client.py:get_provinces",
@@ -757,7 +894,8 @@
       "tags": [
         "nmaiex",
         "rest-client"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/nmaiex_client.py:get_skills",
@@ -768,7 +906,8 @@
       "tags": [
         "nmaiex",
         "rest-client"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/nmaiex_client.py:get_levels",
@@ -779,7 +918,8 @@
       "tags": [
         "nmaiex",
         "rest-client"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/nmaiex_client.py:get_categories",
@@ -790,7 +930,8 @@
       "tags": [
         "nmaiex",
         "rest-client"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/nmaiex_client.py:load_all_master_data",
@@ -801,7 +942,8 @@
       "tags": [
         "nmaiex",
         "rest-client"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/nmaiex_client.py:get_job_detail",
@@ -812,7 +954,8 @@
       "tags": [
         "nmaiex",
         "rest-client"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/nmaiex_client.py:update_job_content",
@@ -823,7 +966,8 @@
       "tags": [
         "nmaiex",
         "rest-client"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/nmaiex_client.py:update_job_structured",
@@ -834,7 +978,8 @@
       "tags": [
         "nmaiex",
         "rest-client"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/nmaiex_client.py:update_candidate",
@@ -845,7 +990,8 @@
       "tags": [
         "nmaiex",
         "rest-client"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/nmaiex_client.py:get_candidates_ranking",
@@ -856,7 +1002,8 @@
       "tags": [
         "nmaiex",
         "rest-client"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:core/nmaiex_client.py:get_jobs_ranking",
@@ -867,7 +1014,8 @@
       "tags": [
         "nmaiex",
         "rest-client"
-      ]
+      ],
+      "complexity": "moderate"
     },
     {
       "id": "function:test_playwright.py:run_test",
@@ -878,980 +1026,2051 @@
       "tags": [
         "playwright",
         "test"
-      ]
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:app.py:_jobposting_agent_error_message",
+      "type": "function",
+      "name": "_jobposting_agent_error_message",
+      "filePath": "app.py",
+      "lineRange": [
+        1634,
+        1644
+      ],
+      "summary": "Streamlit page helper for  jobposting agent error message.",
+      "tags": [
+        "streamlit",
+        "job-agent",
+        "hr-flow"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:app.py:_open_jobposting_agent",
+      "type": "function",
+      "name": "_open_jobposting_agent",
+      "filePath": "app.py",
+      "lineRange": [
+        1647,
+        1665
+      ],
+      "summary": "Streamlit page helper for  open jobposting agent.",
+      "tags": [
+        "streamlit",
+        "job-agent",
+        "hr-flow"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:app.py:_render_jobposting_agent_tool_message",
+      "type": "function",
+      "name": "_render_jobposting_agent_tool_message",
+      "filePath": "app.py",
+      "lineRange": [
+        1668,
+        1722
+      ],
+      "summary": "Render Job Posting Agent tool output using sanitized backend previews before falling back to raw content.",
+      "tags": [
+        "streamlit",
+        "job-agent",
+        "hr-flow"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:app.py:_render_jobposting_agent_messages",
+      "type": "function",
+      "name": "_render_jobposting_agent_messages",
+      "filePath": "app.py",
+      "lineRange": [
+        1725,
+        1778
+      ],
+      "summary": "Streamlit page helper for  render jobposting agent messages.",
+      "tags": [
+        "streamlit",
+        "job-agent",
+        "hr-flow"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:app.py:_render_jobposting_agent_working_set",
+      "type": "function",
+      "name": "_render_jobposting_agent_working_set",
+      "filePath": "app.py",
+      "lineRange": [
+        1781,
+        1871
+      ],
+      "summary": "Streamlit page helper for  render jobposting agent working set.",
+      "tags": [
+        "streamlit",
+        "job-agent",
+        "hr-flow"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:app.py:_render_jobposting_agent_sidebar",
+      "type": "function",
+      "name": "_render_jobposting_agent_sidebar",
+      "filePath": "app.py",
+      "lineRange": [
+        1874,
+        2069
+      ],
+      "summary": "Streamlit page helper for  render jobposting agent sidebar.",
+      "tags": [
+        "streamlit",
+        "job-agent",
+        "hr-flow"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:app.py:page_hr_job_agent",
+      "type": "function",
+      "name": "page_hr_job_agent",
+      "filePath": "app.py",
+      "lineRange": [
+        2072,
+        2302
+      ],
+      "summary": "Render the HR Job Agent page, stream rotating loading messages while FANG runs, and persist conversation state after each response.",
+      "tags": [
+        "streamlit",
+        "job-agent",
+        "hr-flow"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:test_playwright_full.py",
+      "type": "file",
+      "name": "test_playwright_full.py",
+      "filePath": "test_playwright_full.py",
+      "summary": "End-to-end Playwright regression suite for HR and candidate flows, covering job list navigation, CV review, ranking, job-agent chat, and the apply flow against the local Streamlit app.",
+      "tags": [
+        "playwright",
+        "regression-test",
+        "ui-test",
+        "qa"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:test_playwright_full.py:wait_streamlit",
+      "type": "function",
+      "name": "wait_streamlit",
+      "filePath": "test_playwright_full.py",
+      "lineRange": [
+        32,
+        33
+      ],
+      "summary": "Pause briefly to let Streamlit rerender before continuing.",
+      "tags": [
+        "playwright",
+        "test",
+        "timing"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:test_playwright_full.py:target_job_block",
+      "type": "function",
+      "name": "target_job_block",
+      "filePath": "test_playwright_full.py",
+      "lineRange": [
+        36,
+        42
+      ],
+      "summary": "Locate the target job card in the job list by title and Agent button.",
+      "tags": [
+        "playwright",
+        "test",
+        "selector"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:test_playwright_full.py:target_candidate_block",
+      "type": "function",
+      "name": "target_candidate_block",
+      "filePath": "test_playwright_full.py",
+      "lineRange": [
+        45,
+        51
+      ],
+      "summary": "Locate the target candidate card in the applicant list by name and review button.",
+      "tags": [
+        "playwright",
+        "test",
+        "selector"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:test_playwright_full.py:wait_for_message_count",
+      "type": "function",
+      "name": "wait_for_message_count",
+      "filePath": "test_playwright_full.py",
+      "lineRange": [
+        54,
+        60
+      ],
+      "summary": "Wait for a target number of chat messages to appear before checking agent responses.",
+      "tags": [
+        "playwright",
+        "test",
+        "timing"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:test_playwright_full.py:get_conversation_buttons",
+      "type": "function",
+      "name": "get_conversation_buttons",
+      "filePath": "test_playwright_full.py",
+      "lineRange": [
+        63,
+        86
+      ],
+      "summary": "Collect conversation buttons from the sidebar while filtering out quick prompts and control actions.",
+      "tags": [
+        "playwright",
+        "test",
+        "sidebar"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:test_playwright_full.py:open_first_tool_output",
+      "type": "function",
+      "name": "open_first_tool_output",
+      "filePath": "test_playwright_full.py",
+      "lineRange": [
+        89,
+        96
+      ],
+      "summary": "Open the first nested tool output expander and assert the sanitized preview is rendered.",
+      "tags": [
+        "playwright",
+        "test",
+        "ui-navigation"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:test_playwright_full.py:run_test_suite",
+      "type": "function",
+      "name": "run_test_suite",
+      "filePath": "test_playwright_full.py",
+      "lineRange": [
+        99,
+        525
+      ],
+      "summary": "Execute the Playwright regression flow for the job-agent or system QA addendum.",
+      "tags": [
+        "playwright",
+        "regression-test"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:test_playwright_full_system_qa_addendum.py",
+      "type": "file",
+      "name": "test_playwright_full_system_qa_addendum.py",
+      "filePath": "test_playwright_full_system_qa_addendum.py",
+      "summary": "Expanded Playwright system QA addendum that exercises the target HR job, conversation management, tool previews, candidate review flow, and application entry points.",
+      "tags": [
+        "playwright",
+        "system-qa",
+        "regression-test",
+        "ui-test"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:test_playwright_full_system_qa_addendum.py:wait_streamlit",
+      "type": "function",
+      "name": "wait_streamlit",
+      "filePath": "test_playwright_full_system_qa_addendum.py",
+      "lineRange": [
+        33,
+        34
+      ],
+      "summary": "Pause briefly to let Streamlit rerender before continuing.",
+      "tags": [
+        "playwright",
+        "test",
+        "timing"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:test_playwright_full_system_qa_addendum.py:target_job_block",
+      "type": "function",
+      "name": "target_job_block",
+      "filePath": "test_playwright_full_system_qa_addendum.py",
+      "lineRange": [
+        37,
+        43
+      ],
+      "summary": "Locate the target job card in the job list by title and Agent button.",
+      "tags": [
+        "playwright",
+        "test",
+        "selector"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:test_playwright_full_system_qa_addendum.py:target_candidate_block",
+      "type": "function",
+      "name": "target_candidate_block",
+      "filePath": "test_playwright_full_system_qa_addendum.py",
+      "lineRange": [
+        46,
+        52
+      ],
+      "summary": "Locate the target candidate card in the applicant list by name and review button.",
+      "tags": [
+        "playwright",
+        "test",
+        "selector"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:test_playwright_full_system_qa_addendum.py:wait_for_message_count",
+      "type": "function",
+      "name": "wait_for_message_count",
+      "filePath": "test_playwright_full_system_qa_addendum.py",
+      "lineRange": [
+        55,
+        61
+      ],
+      "summary": "Wait for a target number of chat messages to appear before checking agent responses.",
+      "tags": [
+        "playwright",
+        "test",
+        "timing"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:test_playwright_full_system_qa_addendum.py:get_conversation_buttons",
+      "type": "function",
+      "name": "get_conversation_buttons",
+      "filePath": "test_playwright_full_system_qa_addendum.py",
+      "lineRange": [
+        64,
+        84
+      ],
+      "summary": "Collect conversation buttons from the sidebar while filtering out quick prompts and control actions.",
+      "tags": [
+        "playwright",
+        "test",
+        "sidebar"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:test_playwright_full_system_qa_addendum.py:run_test_suite",
+      "type": "function",
+      "name": "run_test_suite",
+      "filePath": "test_playwright_full_system_qa_addendum.py",
+      "lineRange": [
+        87,
+        663
+      ],
+      "summary": "Execute the Playwright regression flow for the job-agent or system QA addendum.",
+      "tags": [
+        "playwright",
+        "regression-test"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:test_playwright_job_agent.py",
+      "type": "file",
+      "name": "test_playwright_job_agent.py",
+      "filePath": "test_playwright_job_agent.py",
+      "summary": "Focused Playwright regression suite for the HR Job Agent, validating prompt chips, conversation handling, candidate ranking, and structured tool previews.",
+      "tags": [
+        "playwright",
+        "job-agent",
+        "regression-test",
+        "ui-test"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:test_playwright_job_agent.py:wait_streamlit",
+      "type": "function",
+      "name": "wait_streamlit",
+      "filePath": "test_playwright_job_agent.py",
+      "lineRange": [
+        29,
+        30
+      ],
+      "summary": "Pause briefly to let Streamlit rerender before continuing.",
+      "tags": [
+        "playwright",
+        "test",
+        "timing"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:test_playwright_job_agent.py:target_job_block",
+      "type": "function",
+      "name": "target_job_block",
+      "filePath": "test_playwright_job_agent.py",
+      "lineRange": [
+        33,
+        39
+      ],
+      "summary": "Locate the target job card in the job list by title and Agent button.",
+      "tags": [
+        "playwright",
+        "test",
+        "selector"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:test_playwright_job_agent.py:get_conversation_buttons",
+      "type": "function",
+      "name": "get_conversation_buttons",
+      "filePath": "test_playwright_job_agent.py",
+      "lineRange": [
+        42,
+        69
+      ],
+      "summary": "Collect conversation buttons from the sidebar while filtering out quick prompts and control actions.",
+      "tags": [
+        "playwright",
+        "test",
+        "sidebar"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:test_playwright_job_agent.py:chat_input",
+      "type": "function",
+      "name": "chat_input",
+      "filePath": "test_playwright_job_agent.py",
+      "lineRange": [
+        72,
+        73
+      ],
+      "summary": "Return the Job Agent chat input field for quick prompt interactions.",
+      "tags": [
+        "playwright",
+        "test",
+        "selector"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:test_playwright_job_agent.py:open_first_tool_output",
+      "type": "function",
+      "name": "open_first_tool_output",
+      "filePath": "test_playwright_job_agent.py",
+      "lineRange": [
+        76,
+        84
+      ],
+      "summary": "Open the first nested tool output expander and assert the sanitized preview is rendered.",
+      "tags": [
+        "playwright",
+        "test",
+        "ui-navigation"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:test_playwright_job_agent.py:run_test_suite",
+      "type": "function",
+      "name": "run_test_suite",
+      "filePath": "test_playwright_job_agent.py",
+      "lineRange": [
+        87,
+        658
+      ],
+      "summary": "Execute the Playwright regression flow for the job-agent or system QA addendum.",
+      "tags": [
+        "playwright",
+        "regression-test"
+      ],
+      "complexity": "complex"
     }
   ],
   "edges": [
     {
-      "source": "file:app.py",
-      "target": "function:app.py:_ensure_master_data",
-      "type": "contains",
-      "weight": 1.0
-    },
-    {
-      "source": "file:app.py",
-      "target": "function:app.py:go",
-      "type": "contains",
-      "weight": 1.0
-    },
-    {
-      "source": "file:app.py",
-      "target": "function:app.py:page_home",
-      "type": "contains",
-      "weight": 1.0
-    },
-    {
-      "source": "file:app.py",
-      "target": "function:app.py:page_login_hr",
-      "type": "contains",
-      "weight": 1.0
-    },
-    {
-      "source": "file:app.py",
-      "target": "function:app.py:page_hr_jobs",
-      "type": "contains",
-      "weight": 1.0
-    },
-    {
-      "source": "file:app.py",
-      "target": "function:app.py:page_hr_job_view",
-      "type": "contains",
-      "weight": 1.0
-    },
-    {
-      "source": "file:app.py",
-      "target": "function:app.py:page_hr_job_edit",
-      "type": "contains",
-      "weight": 1.0
-    },
-    {
-      "source": "file:app.py",
-      "target": "function:app.py:_render_score_badge",
-      "type": "contains",
-      "weight": 1.0
-    },
-    {
-      "source": "file:app.py",
-      "target": "function:app.py:_render_hr_ranking_tab",
-      "type": "contains",
-      "weight": 1.0
-    },
-    {
-      "source": "file:app.py",
-      "target": "function:app.py:page_hr_ai_ranking",
-      "type": "contains",
-      "weight": 1.0
-    },
-    {
-      "source": "file:app.py",
-      "target": "function:app.py:page_hr_applications",
-      "type": "contains",
-      "weight": 1.0
-    },
-    {
-      "source": "file:app.py",
-      "target": "function:app.py:page_hr_app_detail",
-      "type": "contains",
-      "weight": 1.0
-    },
-    {
-      "source": "file:app.py",
-      "target": "function:app.py:page_login_candidate",
-      "type": "contains",
-      "weight": 1.0
-    },
-    {
-      "source": "file:app.py",
-      "target": "function:app.py:page_candidate_jobs",
-      "type": "contains",
-      "weight": 1.0
-    },
-    {
-      "source": "file:app.py",
-      "target": "function:app.py:_render_candidate_ai_jobs",
-      "type": "contains",
-      "weight": 1.0
-    },
-    {
-      "source": "file:app.py",
-      "target": "function:app.py:page_candidate_job_detail",
-      "type": "contains",
-      "weight": 1.0
-    },
-    {
-      "source": "file:app.py",
-      "target": "function:app.py:page_candidate_profile",
-      "type": "contains",
-      "weight": 1.0
-    },
-    {
-      "source": "file:app.py",
-      "target": "function:app.py:page_candidate_apply",
-      "type": "contains",
-      "weight": 1.0
-    },
-    {
       "source": "file:core/cloudinary_upload.py",
       "target": "function:core/cloudinary_upload.py:upload_cv_pdf",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/db.py",
       "target": "function:core/db.py:get_connection",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/db.py",
       "target": "function:core/db.py:get_hr_user",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/db.py",
       "target": "function:core/db.py:get_job_postings_by_company",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/db.py",
       "target": "function:core/db.py:get_applications_for_job",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/db.py",
       "target": "function:core/db.py:get_application_detail",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/db.py",
       "target": "function:core/db.py:get_application_by_job_and_candidate",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/db.py",
       "target": "function:core/db.py:get_ingestion_job_for_app",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/db.py",
       "target": "function:core/db.py:get_candidate_user",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/db.py",
       "target": "function:core/db.py:get_all_job_postings",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/db.py",
       "target": "function:core/db.py:get_job_posting_detail",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/db.py",
       "target": "function:core/db.py:get_candidate_existing_cv",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/db.py",
       "target": "function:core/db.py:has_applied",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/db.py",
       "target": "function:core/db.py:create_application",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/db.py",
       "target": "function:core/db.py:update_candidate_cv_url",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/db.py",
       "target": "function:core/db.py:get_candidate_bio_and_cv",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/fang_client.py",
       "target": "function:core/fang_client.py:_post",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/fang_client.py",
       "target": "function:core/fang_client.py:_get",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/fang_client.py",
       "target": "function:core/fang_client.py:chat_query",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/fang_client.py",
       "target": "function:core/fang_client.py:list_conversations",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/fang_client.py",
       "target": "function:core/fang_client.py:get_conversation_messages",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/fang_client.py",
       "target": "function:core/fang_client.py:summarize_conversation",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/fang_client.py",
       "target": "function:core/fang_client.py:branch_new_conversation",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/fang_client.py",
       "target": "function:core/fang_client.py:trigger_ingestion",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/fang_client.py",
       "target": "function:core/fang_client.py:get_ingestion_status",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/fang_client.py",
       "target": "function:core/fang_client.py:poll_ingestion_until_done",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/fang_client.py",
       "target": "function:core/fang_client.py:health_check",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/nmaiex_client.py",
       "target": "function:core/nmaiex_client.py:_get",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/nmaiex_client.py",
       "target": "function:core/nmaiex_client.py:_patch",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/nmaiex_client.py",
       "target": "function:core/nmaiex_client.py:get_provinces",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/nmaiex_client.py",
       "target": "function:core/nmaiex_client.py:get_skills",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/nmaiex_client.py",
       "target": "function:core/nmaiex_client.py:get_levels",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/nmaiex_client.py",
       "target": "function:core/nmaiex_client.py:get_categories",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/nmaiex_client.py",
       "target": "function:core/nmaiex_client.py:load_all_master_data",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/nmaiex_client.py",
       "target": "function:core/nmaiex_client.py:get_job_detail",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/nmaiex_client.py",
       "target": "function:core/nmaiex_client.py:update_job_content",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/nmaiex_client.py",
       "target": "function:core/nmaiex_client.py:update_job_structured",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/nmaiex_client.py",
       "target": "function:core/nmaiex_client.py:update_candidate",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/nmaiex_client.py",
       "target": "function:core/nmaiex_client.py:get_candidates_ranking",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:core/nmaiex_client.py",
       "target": "function:core/nmaiex_client.py:get_jobs_ranking",
       "type": "contains",
-      "weight": 1.0
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "file:test_playwright.py",
       "target": "function:test_playwright.py:run_test",
       "type": "contains",
-      "weight": 1.0
-    },
-    {
-      "source": "function:app.py:_render_candidate_ai_jobs",
-      "target": "function:app.py:_ensure_master_data",
-      "type": "calls",
-      "weight": 0.8
-    },
-    {
-      "source": "function:app.py:_render_candidate_ai_jobs",
-      "target": "function:app.py:_render_score_badge",
-      "type": "calls",
-      "weight": 0.8
-    },
-    {
-      "source": "function:app.py:_render_candidate_ai_jobs",
-      "target": "function:app.py:go",
-      "type": "calls",
-      "weight": 0.8
-    },
-    {
-      "source": "function:app.py:_render_hr_ranking_tab",
-      "target": "function:app.py:_ensure_master_data",
-      "type": "calls",
-      "weight": 0.8
-    },
-    {
-      "source": "function:app.py:_render_hr_ranking_tab",
-      "target": "function:app.py:_render_score_badge",
-      "type": "calls",
-      "weight": 0.8
-    },
-    {
-      "source": "function:app.py:_render_hr_ranking_tab",
-      "target": "function:app.py:go",
-      "type": "calls",
-      "weight": 0.8
-    },
-    {
-      "source": "function:app.py:page_candidate_apply",
-      "target": "function:app.py:go",
-      "type": "calls",
-      "weight": 0.8
-    },
-    {
-      "source": "function:app.py:page_candidate_apply",
-      "target": "function:core/cloudinary_upload.py:upload_cv_pdf",
-      "type": "calls",
-      "weight": 0.8
-    },
-    {
-      "source": "function:app.py:page_candidate_job_detail",
-      "target": "function:app.py:go",
-      "type": "calls",
-      "weight": 0.8
-    },
-    {
-      "source": "function:app.py:page_candidate_jobs",
-      "target": "function:app.py:_ensure_master_data",
-      "type": "calls",
-      "weight": 0.8
-    },
-    {
-      "source": "function:app.py:page_candidate_jobs",
-      "target": "function:app.py:_render_candidate_ai_jobs",
-      "type": "calls",
-      "weight": 0.8
-    },
-    {
-      "source": "function:app.py:page_candidate_jobs",
-      "target": "function:app.py:go",
-      "type": "calls",
-      "weight": 0.8
-    },
-    {
-      "source": "function:app.py:page_candidate_profile",
-      "target": "function:app.py:go",
-      "type": "calls",
-      "weight": 0.8
-    },
-    {
-      "source": "function:app.py:page_candidate_profile",
-      "target": "function:core/cloudinary_upload.py:upload_cv_pdf",
-      "type": "calls",
-      "weight": 0.8
-    },
-    {
-      "source": "function:app.py:page_home",
-      "target": "function:app.py:go",
-      "type": "calls",
-      "weight": 0.8
-    },
-    {
-      "source": "function:app.py:page_hr_ai_ranking",
-      "target": "function:app.py:_render_hr_ranking_tab",
-      "type": "calls",
-      "weight": 0.8
-    },
-    {
-      "source": "function:app.py:page_hr_ai_ranking",
-      "target": "function:app.py:go",
-      "type": "calls",
-      "weight": 0.8
-    },
-    {
-      "source": "function:app.py:page_hr_app_detail",
-      "target": "function:app.py:go",
-      "type": "calls",
-      "weight": 0.8
-    },
-    {
-      "source": "function:app.py:page_hr_applications",
-      "target": "function:app.py:_ensure_master_data",
-      "type": "calls",
-      "weight": 0.8
-    },
-    {
-      "source": "function:app.py:page_hr_applications",
-      "target": "function:app.py:_render_score_badge",
-      "type": "calls",
-      "weight": 0.8
-    },
-    {
-      "source": "function:app.py:page_hr_applications",
-      "target": "function:app.py:go",
-      "type": "calls",
-      "weight": 0.8
-    },
-    {
-      "source": "function:app.py:page_hr_job_edit",
-      "target": "function:app.py:_ensure_master_data",
-      "type": "calls",
-      "weight": 0.8
-    },
-    {
-      "source": "function:app.py:page_hr_job_edit",
-      "target": "function:app.py:go",
-      "type": "calls",
-      "weight": 0.8
-    },
-    {
-      "source": "function:app.py:page_hr_job_view",
-      "target": "function:app.py:go",
-      "type": "calls",
-      "weight": 0.8
-    },
-    {
-      "source": "function:app.py:page_hr_jobs",
-      "target": "function:app.py:go",
-      "type": "calls",
-      "weight": 0.8
-    },
-    {
-      "source": "function:app.py:page_login_candidate",
-      "target": "function:app.py:go",
-      "type": "calls",
-      "weight": 0.8
-    },
-    {
-      "source": "function:app.py:page_login_hr",
-      "target": "function:app.py:go",
-      "type": "calls",
-      "weight": 0.8
+      "direction": "forward",
+      "weight": 1
     },
     {
       "source": "function:core/db.py:create_application",
       "target": "function:core/db.py:get_connection",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/db.py:get_all_job_postings",
       "target": "function:core/db.py:get_connection",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/db.py:get_application_by_job_and_candidate",
       "target": "function:core/db.py:get_connection",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/db.py:get_application_detail",
       "target": "function:core/db.py:get_connection",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/db.py:get_applications_for_job",
       "target": "function:core/db.py:get_connection",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/db.py:get_candidate_bio_and_cv",
       "target": "function:core/db.py:get_connection",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/db.py:get_candidate_existing_cv",
       "target": "function:core/db.py:get_connection",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/db.py:get_candidate_user",
       "target": "function:core/db.py:get_connection",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/db.py:get_hr_user",
       "target": "function:core/db.py:get_connection",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/db.py:get_ingestion_job_for_app",
       "target": "function:core/db.py:get_connection",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/db.py:get_job_posting_detail",
       "target": "function:core/db.py:get_connection",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/db.py:get_job_postings_by_company",
       "target": "function:core/db.py:get_connection",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/db.py:has_applied",
       "target": "function:core/db.py:get_connection",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/db.py:update_candidate_cv_url",
       "target": "function:core/db.py:get_connection",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/fang_client.py:branch_new_conversation",
       "target": "function:core/fang_client.py:_post",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/fang_client.py:chat_query",
       "target": "function:core/fang_client.py:_post",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/fang_client.py:get_conversation_messages",
       "target": "function:core/fang_client.py:_get",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/fang_client.py:get_ingestion_status",
       "target": "function:core/fang_client.py:_get",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/fang_client.py:list_conversations",
       "target": "function:core/fang_client.py:_get",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/fang_client.py:poll_ingestion_until_done",
       "target": "function:core/fang_client.py:get_ingestion_status",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/fang_client.py:summarize_conversation",
       "target": "function:core/fang_client.py:_post",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/fang_client.py:trigger_ingestion",
       "target": "function:core/fang_client.py:_post",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/nmaiex_client.py:get_candidates_ranking",
       "target": "function:core/nmaiex_client.py:_get",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/nmaiex_client.py:get_categories",
       "target": "function:core/nmaiex_client.py:_get",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/nmaiex_client.py:get_job_detail",
       "target": "function:core/nmaiex_client.py:_get",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/nmaiex_client.py:get_jobs_ranking",
       "target": "function:core/nmaiex_client.py:_get",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/nmaiex_client.py:get_levels",
       "target": "function:core/nmaiex_client.py:_get",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/nmaiex_client.py:get_provinces",
       "target": "function:core/nmaiex_client.py:_get",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/nmaiex_client.py:get_skills",
       "target": "function:core/nmaiex_client.py:_get",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/nmaiex_client.py:load_all_master_data",
       "target": "function:core/nmaiex_client.py:get_categories",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/nmaiex_client.py:load_all_master_data",
       "target": "function:core/nmaiex_client.py:get_levels",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/nmaiex_client.py:load_all_master_data",
       "target": "function:core/nmaiex_client.py:get_provinces",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/nmaiex_client.py:load_all_master_data",
       "target": "function:core/nmaiex_client.py:get_skills",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/nmaiex_client.py:update_candidate",
       "target": "function:core/nmaiex_client.py:_patch",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/nmaiex_client.py:update_job_content",
       "target": "function:core/nmaiex_client.py:_patch",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
       "source": "function:core/nmaiex_client.py:update_job_structured",
       "target": "function:core/nmaiex_client.py:_patch",
       "type": "calls",
+      "direction": "forward",
       "weight": 0.8
     },
     {
-      "source": "file:app.py",
-      "target": "file:core/db.py",
-      "type": "imports",
-      "weight": 0.7
-    },
-    {
-      "source": "file:app.py",
-      "target": "file:core/fang_client.py",
-      "type": "imports",
-      "weight": 0.7
-    },
-    {
-      "source": "file:app.py",
-      "target": "file:core/nmaiex_client.py",
-      "type": "imports",
-      "weight": 0.7
-    },
-    {
-      "source": "file:app.py",
-      "target": "file:core/cloudinary_upload.py",
-      "type": "imports",
-      "weight": 0.7
-    },
-    {
-      "source": "document:README.md",
-      "target": "file:app.py",
-      "type": "documents",
-      "weight": 0.5
-    },
-    {
       "source": "document:README.md",
       "target": "file:core/db.py",
       "type": "documents",
+      "direction": "forward",
       "weight": 0.5
     },
     {
       "source": "document:README.md",
       "target": "file:core/fang_client.py",
       "type": "documents",
+      "direction": "forward",
       "weight": 0.5
     },
     {
       "source": "document:README.md",
       "target": "file:core/cloudinary_upload.py",
       "type": "documents",
-      "weight": 0.5
-    },
-    {
-      "source": "document:docs/candidate_apply_guide.md",
-      "target": "file:app.py",
-      "type": "documents",
+      "direction": "forward",
       "weight": 0.5
     },
     {
       "source": "document:docs/candidate_apply_guide.md",
       "target": "file:core/db.py",
       "type": "documents",
+      "direction": "forward",
       "weight": 0.5
     },
     {
       "source": "document:docs/candidate_apply_guide.md",
       "target": "file:core/fang_client.py",
       "type": "documents",
+      "direction": "forward",
       "weight": 0.5
     },
     {
       "source": "document:docs/candidate_apply_guide.md",
       "target": "file:core/cloudinary_upload.py",
       "type": "documents",
-      "weight": 0.5
-    },
-    {
-      "source": "document:docs/candidate_apply_strategy.md",
-      "target": "file:app.py",
-      "type": "documents",
+      "direction": "forward",
       "weight": 0.5
     },
     {
       "source": "document:docs/candidate_apply_strategy.md",
       "target": "file:core/db.py",
       "type": "documents",
+      "direction": "forward",
       "weight": 0.5
     },
     {
       "source": "document:docs/candidate_apply_strategy.md",
       "target": "file:core/fang_client.py",
       "type": "documents",
+      "direction": "forward",
       "weight": 0.5
     },
     {
       "source": "document:docs/candidate_apply_strategy.md",
       "target": "file:core/cloudinary_upload.py",
       "type": "documents",
-      "weight": 0.5
-    },
-    {
-      "source": "document:agent_workflow_doc/implementation_plan.md",
-      "target": "file:app.py",
-      "type": "documents",
+      "direction": "forward",
       "weight": 0.5
     },
     {
       "source": "document:agent_workflow_doc/implementation_plan.md",
       "target": "file:core/fang_client.py",
       "type": "documents",
+      "direction": "forward",
       "weight": 0.5
     },
     {
       "source": "document:agent_workflow_doc/implementation_plan.md",
       "target": "file:core/nmaiex_client.py",
       "type": "documents",
+      "direction": "forward",
       "weight": 0.5
     },
     {
       "source": "document:agent_workflow_doc/implementation_plan.md",
       "target": "file:core/cloudinary_upload.py",
       "type": "documents",
+      "direction": "forward",
       "weight": 0.5
     },
     {
       "source": "document:docs/archive/hr_guide_v1.md",
       "target": "document:README.md",
       "type": "similar_to",
+      "direction": "forward",
       "weight": 0.5
     },
     {
       "source": "document:docs/archive/rag_strategy_v1.md",
       "target": "document:agent_workflow_doc/implementation_plan.md",
       "type": "similar_to",
+      "direction": "forward",
       "weight": 0.5
     },
     {
       "source": "config:.env.example",
-      "target": "file:app.py",
-      "type": "configures",
-      "weight": 0.6
-    },
-    {
-      "source": "config:.env.example",
       "target": "file:core/db.py",
       "type": "configures",
+      "direction": "forward",
       "weight": 0.6
     },
     {
       "source": "config:.env.example",
       "target": "file:core/fang_client.py",
       "type": "configures",
+      "direction": "forward",
       "weight": 0.6
     },
     {
       "source": "config:.env.example",
       "target": "file:core/nmaiex_client.py",
       "type": "configures",
+      "direction": "forward",
       "weight": 0.6
     },
     {
       "source": "config:.env.example",
       "target": "file:core/cloudinary_upload.py",
       "type": "configures",
-      "weight": 0.6
-    },
-    {
-      "source": "config:requirements.txt",
-      "target": "file:app.py",
-      "type": "configures",
+      "direction": "forward",
       "weight": 0.6
     },
     {
       "source": "config:requirements.txt",
       "target": "file:core/cloudinary_upload.py",
       "type": "configures",
+      "direction": "forward",
       "weight": 0.6
     },
     {
       "source": "config:requirements.txt",
       "target": "file:core/db.py",
       "type": "configures",
+      "direction": "forward",
       "weight": 0.6
     },
     {
       "source": "config:requirements.txt",
       "target": "file:core/fang_client.py",
       "type": "configures",
+      "direction": "forward",
       "weight": 0.6
     },
     {
       "source": "config:requirements.txt",
       "target": "file:core/nmaiex_client.py",
       "type": "configures",
+      "direction": "forward",
       "weight": 0.6
     },
     {
       "source": "config:requirements.txt",
       "target": "file:test_playwright.py",
       "type": "configures",
-      "weight": 0.6
-    },
-    {
-      "source": "config:.pre-commit-config.yaml",
-      "target": "file:app.py",
-      "type": "configures",
+      "direction": "forward",
       "weight": 0.6
     },
     {
       "source": "config:.pre-commit-config.yaml",
       "target": "file:core/db.py",
       "type": "configures",
+      "direction": "forward",
       "weight": 0.6
     },
     {
       "source": "config:.pre-commit-config.yaml",
       "target": "file:test_playwright.py",
       "type": "configures",
+      "direction": "forward",
       "weight": 0.6
     },
     {
       "source": "config:.gitleaks.toml",
       "target": "config:.env.example",
       "type": "related",
+      "direction": "forward",
       "weight": 0.5
     },
     {
       "source": "config:.understand-anything/.understandignore",
       "target": "document:README.md",
       "type": "related",
+      "direction": "forward",
       "weight": 0.5
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:_ensure_master_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:go",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:page_home",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:page_login_hr",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:page_hr_jobs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:page_hr_job_view",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:page_hr_job_edit",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:_render_score_badge",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:_render_hr_ranking_tab",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:page_hr_ai_ranking",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:page_hr_applications",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:page_hr_app_detail",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:page_login_candidate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:page_candidate_jobs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:_render_candidate_ai_jobs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:page_candidate_job_detail",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:page_candidate_profile",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:page_candidate_apply",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "function:app.py:_render_candidate_ai_jobs",
+      "target": "function:app.py:_ensure_master_data",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:_render_candidate_ai_jobs",
+      "target": "function:app.py:_render_score_badge",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:_render_candidate_ai_jobs",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:_render_hr_ranking_tab",
+      "target": "function:app.py:_ensure_master_data",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:_render_hr_ranking_tab",
+      "target": "function:app.py:_render_score_badge",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:_render_hr_ranking_tab",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_candidate_apply",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_candidate_apply",
+      "target": "function:core/cloudinary_upload.py:upload_cv_pdf",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_candidate_job_detail",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_candidate_jobs",
+      "target": "function:app.py:_ensure_master_data",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_candidate_jobs",
+      "target": "function:app.py:_render_candidate_ai_jobs",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_candidate_jobs",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_candidate_profile",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_candidate_profile",
+      "target": "function:core/cloudinary_upload.py:upload_cv_pdf",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_home",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_hr_ai_ranking",
+      "target": "function:app.py:_render_hr_ranking_tab",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_hr_ai_ranking",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_hr_app_detail",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_hr_applications",
+      "target": "function:app.py:_ensure_master_data",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_hr_applications",
+      "target": "function:app.py:_render_score_badge",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_hr_applications",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_hr_job_edit",
+      "target": "function:app.py:_ensure_master_data",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_hr_job_edit",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_hr_job_view",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_hr_jobs",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_login_candidate",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_login_hr",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app.py",
+      "target": "file:core/db.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:app.py",
+      "target": "file:core/fang_client.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:app.py",
+      "target": "file:core/nmaiex_client.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:app.py",
+      "target": "file:core/cloudinary_upload.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "document:README.md",
+      "target": "file:app.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/candidate_apply_guide.md",
+      "target": "file:app.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:docs/candidate_apply_strategy.md",
+      "target": "file:app.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:agent_workflow_doc/implementation_plan.md",
+      "target": "file:app.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "config:.env.example",
+      "target": "file:app.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:requirements.txt",
+      "target": "file:app.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:.pre-commit-config.yaml",
+      "target": "file:app.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
     },
     {
       "source": "config:.understand-anything/.understandignore",
       "target": "file:app.py",
       "type": "configures",
+      "direction": "forward",
       "weight": 0.6
     },
     {
       "source": "file:app.py",
       "target": "file:test_playwright.py",
       "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:_jobposting_agent_error_message",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:_open_jobposting_agent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:_render_jobposting_agent_tool_message",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:_render_jobposting_agent_messages",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:_render_jobposting_agent_working_set",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:_render_jobposting_agent_sidebar",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:app.py",
+      "target": "function:app.py:page_hr_job_agent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "function:app.py:page_hr_jobs",
+      "target": "function:app.py:_open_jobposting_agent",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_hr_job_view",
+      "target": "function:app.py:_open_jobposting_agent",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_hr_ai_ranking",
+      "target": "function:app.py:_open_jobposting_agent",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_hr_applications",
+      "target": "function:app.py:_open_jobposting_agent",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:_open_jobposting_agent",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:_render_jobposting_agent_messages",
+      "target": "function:app.py:_render_jobposting_agent_tool_message",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:_render_jobposting_agent_working_set",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:_render_jobposting_agent_sidebar",
+      "target": "function:app.py:_jobposting_agent_error_message",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:_render_jobposting_agent_sidebar",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_hr_job_agent",
+      "target": "function:app.py:go",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_hr_job_agent",
+      "target": "function:app.py:_render_jobposting_agent_sidebar",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_hr_job_agent",
+      "target": "function:app.py:_render_jobposting_agent_messages",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_hr_job_agent",
+      "target": "function:app.py:_render_jobposting_agent_working_set",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:app.py:page_hr_job_agent",
+      "target": "function:app.py:_jobposting_agent_error_message",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:test_playwright_full.py",
+      "target": "function:test_playwright_full.py:wait_streamlit",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:test_playwright_full.py",
+      "target": "function:test_playwright_full.py:target_job_block",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:test_playwright_full.py",
+      "target": "function:test_playwright_full.py:target_candidate_block",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:test_playwright_full.py",
+      "target": "function:test_playwright_full.py:wait_for_message_count",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:test_playwright_full.py",
+      "target": "function:test_playwright_full.py:get_conversation_buttons",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:test_playwright_full.py",
+      "target": "function:test_playwright_full.py:open_first_tool_output",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:test_playwright_full.py",
+      "target": "function:test_playwright_full.py:run_test_suite",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "function:test_playwright_full.py:wait_for_message_count",
+      "target": "function:test_playwright_full.py:wait_streamlit",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:test_playwright_full.py:open_first_tool_output",
+      "target": "function:test_playwright_full.py:wait_streamlit",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:test_playwright_full.py:run_test_suite",
+      "target": "function:test_playwright_full.py:target_job_block",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:test_playwright_full.py:run_test_suite",
+      "target": "function:test_playwright_full.py:wait_streamlit",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:test_playwright_full.py:run_test_suite",
+      "target": "function:test_playwright_full.py:target_candidate_block",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:test_playwright_full.py:run_test_suite",
+      "target": "function:test_playwright_full.py:wait_for_message_count",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:test_playwright_full.py:run_test_suite",
+      "target": "function:test_playwright_full.py:open_first_tool_output",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:test_playwright_full_system_qa_addendum.py",
+      "target": "function:test_playwright_full_system_qa_addendum.py:wait_streamlit",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:test_playwright_full_system_qa_addendum.py",
+      "target": "function:test_playwright_full_system_qa_addendum.py:target_job_block",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:test_playwright_full_system_qa_addendum.py",
+      "target": "function:test_playwright_full_system_qa_addendum.py:target_candidate_block",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:test_playwright_full_system_qa_addendum.py",
+      "target": "function:test_playwright_full_system_qa_addendum.py:wait_for_message_count",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:test_playwright_full_system_qa_addendum.py",
+      "target": "function:test_playwright_full_system_qa_addendum.py:get_conversation_buttons",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:test_playwright_full_system_qa_addendum.py",
+      "target": "function:test_playwright_full_system_qa_addendum.py:run_test_suite",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "function:test_playwright_full_system_qa_addendum.py:wait_for_message_count",
+      "target": "function:test_playwright_full_system_qa_addendum.py:wait_streamlit",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:test_playwright_full_system_qa_addendum.py:run_test_suite",
+      "target": "function:test_playwright_full_system_qa_addendum.py:wait_streamlit",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:test_playwright_full_system_qa_addendum.py:run_test_suite",
+      "target": "function:test_playwright_full_system_qa_addendum.py:target_job_block",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:test_playwright_full_system_qa_addendum.py:run_test_suite",
+      "target": "function:test_playwright_full_system_qa_addendum.py:target_candidate_block",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:test_playwright_full_system_qa_addendum.py:run_test_suite",
+      "target": "function:test_playwright_full_system_qa_addendum.py:wait_for_message_count",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:test_playwright_job_agent.py",
+      "target": "function:test_playwright_job_agent.py:wait_streamlit",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:test_playwright_job_agent.py",
+      "target": "function:test_playwright_job_agent.py:target_job_block",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:test_playwright_job_agent.py",
+      "target": "function:test_playwright_job_agent.py:get_conversation_buttons",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:test_playwright_job_agent.py",
+      "target": "function:test_playwright_job_agent.py:chat_input",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:test_playwright_job_agent.py",
+      "target": "function:test_playwright_job_agent.py:open_first_tool_output",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:test_playwright_job_agent.py",
+      "target": "function:test_playwright_job_agent.py:run_test_suite",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "function:test_playwright_job_agent.py:open_first_tool_output",
+      "target": "function:test_playwright_job_agent.py:wait_streamlit",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:test_playwright_job_agent.py:run_test_suite",
+      "target": "function:test_playwright_job_agent.py:target_job_block",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:test_playwright_job_agent.py:run_test_suite",
+      "target": "function:test_playwright_job_agent.py:wait_streamlit",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:test_playwright_job_agent.py:run_test_suite",
+      "target": "function:test_playwright_job_agent.py:chat_input",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:test_playwright_job_agent.py:run_test_suite",
+      "target": "function:test_playwright_job_agent.py:get_conversation_buttons",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:test_playwright_job_agent.py:run_test_suite",
+      "target": "function:test_playwright_job_agent.py:open_first_tool_output",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:app.py",
+      "target": "file:test_playwright_full.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:app.py",
+      "target": "file:test_playwright_full_system_qa_addendum.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:app.py",
+      "target": "file:test_playwright_job_agent.py",
+      "type": "tested_by",
+      "direction": "forward",
       "weight": 0.5
     }
   ],
@@ -1885,14 +3104,18 @@
     {
       "id": "layer:quality-and-operations",
       "name": "Quality And Operations",
-      "description": "Local test automation and repository-level configuration that shape runtime dependencies, secret handling, quality checks, and analysis scope.",
+      "description": "Local Playwright regression suites and repository-level config that validate UI behavior and control dependencies, secrets, and analysis scope.",
       "nodeIds": [
         "file:test_playwright.py",
         "config:.env.example",
         "config:.gitleaks.toml",
         "config:.pre-commit-config.yaml",
         "config:.understand-anything/.understandignore",
-        "config:requirements.txt"
+        "config:requirements.txt",
+        "file:app.py",
+        "file:test_playwright_full.py",
+        "file:test_playwright_full_system_qa_addendum.py",
+        "file:test_playwright_job_agent.py"
       ]
     },
     {
@@ -1958,11 +3181,15 @@
     {
       "order": 6,
       "title": "Quality And Local Validation",
-      "description": "Finish with the local smoke test and repo-level config to see how the team validates the UI and controls dependencies and analysis scope.",
+      "description": "Finish with the local Playwright suites and repo-level config to see how the team validates the UI and controls dependencies and analysis scope.",
       "nodeIds": [
         "file:test_playwright.py",
         "config:requirements.txt",
-        "config:.pre-commit-config.yaml"
+        "config:.pre-commit-config.yaml",
+        "file:app.py",
+        "file:test_playwright_full.py",
+        "file:test_playwright_full_system_qa_addendum.py",
+        "file:test_playwright_job_agent.py"
       ]
     }
   ]

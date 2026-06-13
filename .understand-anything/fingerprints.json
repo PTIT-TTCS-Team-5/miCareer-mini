@@ -1,11 +1,11 @@
 {
   "version": "1.0.0",
-  "gitCommitHash": "76bb27e7b53472efff192df8be7e2d80c0b8dded",
-  "generatedAt": "2026-05-27T06:33:07.845Z",
+  "gitCommitHash": "c3ddf43beee972bf67bff49cb54be81209dfae22",
+  "generatedAt": "2026-06-08T14:36:01.601Z",
   "files": {
     "app.py": {
       "filePath": "app.py",
-      "contentHash": "8cf104a8daff64173f084c4ebe2b6d147bc16755070e7f8e3f34a47aee667754",
+      "contentHash": "6b8f5d3f250caf1d91e727cdac2b9ecd5fa9453a1d5f6ad77c5cbf5a8231f83c",
       "functions": [
         {
           "name": "_ensure_master_data",
@@ -37,13 +37,13 @@
           "name": "page_hr_jobs",
           "params": [],
           "exported": true,
-          "lineCount": 37
+          "lineCount": 45
         },
         {
           "name": "page_hr_job_view",
           "params": [],
           "exported": true,
-          "lineCount": 52
+          "lineCount": 61
         },
         {
           "name": "page_hr_job_edit",
@@ -71,13 +71,13 @@
           "name": "page_hr_ai_ranking",
           "params": [],
           "exported": true,
-          "lineCount": 16
+          "lineCount": 24
         },
         {
           "name": "page_hr_applications",
           "params": [],
           "exported": true,
-          "lineCount": 193
+          "lineCount": 201
         },
         {
           "name": "page_hr_app_detail",
@@ -123,6 +123,72 @@
           "params": [],
           "exported": true,
           "lineCount": 106
+        },
+        {
+          "name": "_jobposting_agent_error_message",
+          "params": [
+            "exc"
+          ],
+          "returnType": "str",
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "_open_jobposting_agent",
+          "params": [
+            "job_id",
+            "job_title"
+          ],
+          "returnType": "None",
+          "exported": true,
+          "lineCount": 19
+        },
+        {
+          "name": "_render_jobposting_agent_tool_message",
+          "params": [
+            "tool_call",
+            "step_idx"
+          ],
+          "returnType": "None",
+          "exported": true,
+          "lineCount": 55
+        },
+        {
+          "name": "_render_jobposting_agent_messages",
+          "params": [
+            "messages"
+          ],
+          "returnType": "None",
+          "exported": true,
+          "lineCount": 54
+        },
+        {
+          "name": "_render_jobposting_agent_working_set",
+          "params": [
+            "working_set",
+            "source_job_app_ids"
+          ],
+          "returnType": "None",
+          "exported": true,
+          "lineCount": 91
+        },
+        {
+          "name": "_render_jobposting_agent_sidebar",
+          "params": [
+            "job_id",
+            "hr_id",
+            "job_obj"
+          ],
+          "returnType": "None",
+          "exported": true,
+          "lineCount": 196
+        },
+        {
+          "name": "page_hr_job_agent",
+          "params": [],
+          "returnType": "None",
+          "exported": true,
+          "lineCount": 231
         }
       ],
       "classes": [],
@@ -172,9 +238,16 @@
         "_render_candidate_ai_jobs",
         "page_candidate_job_detail",
         "page_candidate_profile",
-        "page_candidate_apply"
+        "page_candidate_apply",
+        "_jobposting_agent_error_message",
+        "_open_jobposting_agent",
+        "_render_jobposting_agent_tool_message",
+        "_render_jobposting_agent_messages",
+        "_render_jobposting_agent_working_set",
+        "_render_jobposting_agent_sidebar",
+        "page_hr_job_agent"
       ],
-      "totalLines": 1631,
+      "totalLines": 2380,
       "hasStructuralAnalysis": true
     },
     "core/cloudinary_upload.py": {
@@ -227,7 +300,7 @@
     },
     "core/db.py": {
       "filePath": "core/db.py",
-      "contentHash": "cb3372d3cbae8cac0236198d0e86d7091f0cc2007511eeb4c8edd43fbc9dbbec",
+      "contentHash": "526a8b82d2b606f3887eec02461ab043fbb51fd17f2717756bdd299a377cf416",
       "functions": [
         {
           "name": "get_connection",
@@ -355,6 +428,15 @@
           "returnType": "dict | None",
           "exported": true,
           "lineCount": 11
+        },
+        {
+          "name": "get_application_summaries_by_ids",
+          "params": [
+            "job_app_ids"
+          ],
+          "returnType": "list[dict]",
+          "exported": true,
+          "lineCount": 24
         }
       ],
       "classes": [],
@@ -399,14 +481,15 @@
         "has_applied",
         "create_application",
         "update_candidate_cv_url",
-        "get_candidate_bio_and_cv"
+        "get_candidate_bio_and_cv",
+        "get_application_summaries_by_ids"
       ],
-      "totalLines": 269,
+      "totalLines": 300,
       "hasStructuralAnalysis": true
     },
     "core/fang_client.py": {
       "filePath": "core/fang_client.py",
-      "contentHash": "d53fd85b07b99622f73e46f8249503a0e38167a2d124d4e807d03a4e88e57b7e",
+      "contentHash": "d95d1bcd0ba4c79e1b91ffc404223b8da2cb2f5f6c4c8dc5ea05896d0bbbbb57",
       "functions": [
         {
           "name": "_post",
@@ -427,6 +510,27 @@
           "returnType": "Any",
           "exported": true,
           "lineCount": 5
+        },
+        {
+          "name": "_patch",
+          "params": [
+            "path",
+            "payload",
+            "params"
+          ],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "_delete",
+          "params": [
+            "path",
+            "params"
+          ],
+          "returnType": "None",
+          "exported": true,
+          "lineCount": 4
         },
         {
           "name": "chat_query",
@@ -514,6 +618,60 @@
           "returnType": "bool",
           "exported": true,
           "lineCount": 7
+        },
+        {
+          "name": "jobposting_agent_query",
+          "params": [
+            "job_post_id",
+            "hr_id",
+            "prompt",
+            "conversation_id"
+          ],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 20
+        },
+        {
+          "name": "list_jobposting_agent_conversations",
+          "params": [
+            "job_post_id",
+            "hr_id"
+          ],
+          "returnType": "list[dict]",
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "get_jobposting_agent_messages",
+          "params": [
+            "conversation_id",
+            "include_tool_messages",
+            "include_system"
+          ],
+          "returnType": "list[dict]",
+          "exported": true,
+          "lineCount": 17
+        },
+        {
+          "name": "rename_jobposting_agent_conversation",
+          "params": [
+            "conversation_id",
+            "hr_id",
+            "title"
+          ],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "archive_jobposting_agent_conversation",
+          "params": [
+            "conversation_id",
+            "hr_id"
+          ],
+          "returnType": "None",
+          "exported": true,
+          "lineCount": 9
         }
       ],
       "classes": [],
@@ -552,6 +710,8 @@
       "exports": [
         "_post",
         "_get",
+        "_patch",
+        "_delete",
         "chat_query",
         "list_conversations",
         "get_conversation_messages",
@@ -560,9 +720,14 @@
         "trigger_ingestion",
         "get_ingestion_status",
         "poll_ingestion_until_done",
-        "health_check"
+        "health_check",
+        "jobposting_agent_query",
+        "list_jobposting_agent_conversations",
+        "get_jobposting_agent_messages",
+        "rename_jobposting_agent_conversation",
+        "archive_jobposting_agent_conversation"
       ],
-      "totalLines": 154,
+      "totalLines": 256,
       "hasStructuralAnalysis": true
     },
     "core/nmaiex_client.py": {
@@ -740,13 +905,13 @@
     },
     "test_playwright.py": {
       "filePath": "test_playwright.py",
-      "contentHash": "0dfc95385516728c68d84b142b6c964e8d3c6b3f7f39041de8c56e943d77688e",
+      "contentHash": "402a7d6359c72b3f3308e54303f32375b4ce11ba4fc562564055ed8d49c247cb",
       "functions": [
         {
           "name": "run_test",
           "params": [],
           "exported": true,
-          "lineCount": 49
+          "lineCount": 51
         }
       ],
       "classes": [],
@@ -761,7 +926,285 @@
       "exports": [
         "run_test"
       ],
-      "totalLines": 55,
+      "totalLines": 59,
+      "hasStructuralAnalysis": true
+    },
+    "test_playwright_full.py": {
+      "filePath": "test_playwright_full.py",
+      "contentHash": "5d993bdd9f8b4fbc07a180c75e7c8e9d2e06b5564fa15916a30f738cebb6f3b8",
+      "functions": [
+        {
+          "name": "wait_streamlit",
+          "params": [
+            "page",
+            "ms"
+          ],
+          "returnType": "None",
+          "exported": true,
+          "lineCount": 2
+        },
+        {
+          "name": "target_job_block",
+          "params": [
+            "page"
+          ],
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "target_candidate_block",
+          "params": [
+            "page"
+          ],
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "wait_for_message_count",
+          "params": [
+            "page",
+            "count",
+            "timeout"
+          ],
+          "returnType": "None",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "get_conversation_buttons",
+          "params": [
+            "page"
+          ],
+          "exported": true,
+          "lineCount": 24
+        },
+        {
+          "name": "open_first_tool_output",
+          "params": [
+            "page"
+          ],
+          "returnType": "None",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "run_test_suite",
+          "params": [],
+          "exported": true,
+          "lineCount": 427
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "sys",
+          "specifiers": [
+            "sys"
+          ]
+        },
+        {
+          "source": "time",
+          "specifiers": [
+            "time"
+          ]
+        },
+        {
+          "source": "playwright.sync_api",
+          "specifiers": [
+            "Page",
+            "expect",
+            "sync_playwright"
+          ]
+        }
+      ],
+      "exports": [
+        "wait_streamlit",
+        "target_job_block",
+        "target_candidate_block",
+        "wait_for_message_count",
+        "get_conversation_buttons",
+        "open_first_tool_output",
+        "run_test_suite"
+      ],
+      "totalLines": 530,
+      "hasStructuralAnalysis": true
+    },
+    "test_playwright_full_system_qa_addendum.py": {
+      "filePath": "test_playwright_full_system_qa_addendum.py",
+      "contentHash": "dd7bfa81ec5d98f362f671b6e38f819574b67dad0a392c5c521d0c42ff12a7fc",
+      "functions": [
+        {
+          "name": "wait_streamlit",
+          "params": [
+            "page",
+            "ms"
+          ],
+          "returnType": "None",
+          "exported": true,
+          "lineCount": 2
+        },
+        {
+          "name": "target_job_block",
+          "params": [
+            "page"
+          ],
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "target_candidate_block",
+          "params": [
+            "page"
+          ],
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "wait_for_message_count",
+          "params": [
+            "page",
+            "count",
+            "timeout"
+          ],
+          "returnType": "None",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "get_conversation_buttons",
+          "params": [
+            "page"
+          ],
+          "exported": true,
+          "lineCount": 21
+        },
+        {
+          "name": "run_test_suite",
+          "params": [],
+          "exported": true,
+          "lineCount": 577
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "sys",
+          "specifiers": [
+            "sys"
+          ]
+        },
+        {
+          "source": "time",
+          "specifiers": [
+            "time"
+          ]
+        },
+        {
+          "source": "playwright.sync_api",
+          "specifiers": [
+            "Page",
+            "expect",
+            "sync_playwright"
+          ]
+        }
+      ],
+      "exports": [
+        "wait_streamlit",
+        "target_job_block",
+        "target_candidate_block",
+        "wait_for_message_count",
+        "get_conversation_buttons",
+        "run_test_suite"
+      ],
+      "totalLines": 668,
+      "hasStructuralAnalysis": true
+    },
+    "test_playwright_job_agent.py": {
+      "filePath": "test_playwright_job_agent.py",
+      "contentHash": "025d294370256f0f58223dd2dcdff90abba25d30cf9013f0be01caff19a2c231",
+      "functions": [
+        {
+          "name": "wait_streamlit",
+          "params": [
+            "page",
+            "ms"
+          ],
+          "returnType": "None",
+          "exported": true,
+          "lineCount": 2
+        },
+        {
+          "name": "target_job_block",
+          "params": [
+            "page"
+          ],
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "get_conversation_buttons",
+          "params": [
+            "page"
+          ],
+          "exported": true,
+          "lineCount": 28
+        },
+        {
+          "name": "chat_input",
+          "params": [
+            "page"
+          ],
+          "exported": true,
+          "lineCount": 2
+        },
+        {
+          "name": "open_first_tool_output",
+          "params": [
+            "page"
+          ],
+          "returnType": "None",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "run_test_suite",
+          "params": [],
+          "exported": true,
+          "lineCount": 572
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "sys",
+          "specifiers": [
+            "sys"
+          ]
+        },
+        {
+          "source": "time",
+          "specifiers": [
+            "time"
+          ]
+        },
+        {
+          "source": "playwright.sync_api",
+          "specifiers": [
+            "Page",
+            "expect",
+            "sync_playwright"
+          ]
+        }
+      ],
+      "exports": [
+        "wait_streamlit",
+        "target_job_block",
+        "get_conversation_buttons",
+        "chat_input",
+        "open_first_tool_output",
+        "run_test_suite"
+      ],
+      "totalLines": 663,
       "hasStructuralAnalysis": true
     }
   }
